@@ -3,7 +3,7 @@
 // @namespace    https://github.com/glingus/socialmerd
 // @description  Instagram and YouTube without the addictive parts, in the Orion browser on iPhone (via Tampermonkey).
 // @description:it  Instagram e YouTube senza le parti che creano dipendenza, nel browser Orion su iPhone (tramite Tampermonkey).
-// @version      0.1.0.10
+// @version      0.1.0.11
 // @license      GPL-3.0-or-later
 // @match        https://www.instagram.com/*
 // @match        https://instagram.com/*
@@ -36,42 +36,6 @@
       return "youtube";
     }
     return null;
-  }
-
-  // src/core/gm.ts
-  function hasGM() {
-    return typeof GM !== "undefined" && typeof GM.getValue === "function";
-  }
-  async function getValue(key, defaultValue) {
-    if (hasGM()) {
-      return GM.getValue(key, defaultValue);
-    }
-    const raw = localStorage.getItem(key);
-    if (raw === null) return defaultValue;
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return defaultValue;
-    }
-  }
-  async function setValue(key, value) {
-    if (hasGM()) {
-      return GM.setValue(key, value);
-    }
-    localStorage.setItem(key, JSON.stringify(value));
-  }
-
-  // src/core/styles.ts
-  function injectStyle(css, id) {
-    const existing = document.getElementById(id);
-    if (existing) {
-      existing.textContent = css;
-      return;
-    }
-    const style = document.createElement("style");
-    style.id = id;
-    style.textContent = css;
-    document.documentElement.appendChild(style);
   }
 
   // src/core/dom-scheduler.ts
@@ -270,6 +234,29 @@
     }
   }
   var registerFeedFilterProcessor = (getRoute) => (root) => processFeedFilter(root, getRoute());
+
+  // src/core/gm.ts
+  function hasGM() {
+    return typeof GM !== "undefined" && typeof GM.getValue === "function";
+  }
+  async function getValue(key, defaultValue) {
+    if (hasGM()) {
+      return GM.getValue(key, defaultValue);
+    }
+    const raw = localStorage.getItem(key);
+    if (raw === null) return defaultValue;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return defaultValue;
+    }
+  }
+  async function setValue(key, value) {
+    if (hasGM()) {
+      return GM.setValue(key, value);
+    }
+    localStorage.setItem(key, JSON.stringify(value));
+  }
 
   // src/core/storage.ts
   function emptyDayStats() {
@@ -874,48 +861,105 @@
     };
   }
 
-  // src/main.ts
-  var BADGE_ID = "smd-hello-badge";
-  var STYLE_ID = "smd-hello-style";
-  var COUNT_KEY = "smd:v1:hello:count";
-  injectStyle(
-    `
-  #${BADGE_ID} {
-    position: fixed;
-    right: 12px;
-    bottom: 12px;
-    z-index: 2147483647;
-    padding: 6px 10px;
-    border-radius: 8px;
-    background: #111;
-    color: #fff;
-    font: 12px/1.4 -apple-system, system-ui, sans-serif;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-    pointer-events: none;
-    opacity: 0.85;
-  }
-  `,
-    STYLE_ID
-  );
-  function renderBadge(site, count) {
-    let badge = document.getElementById(BADGE_ID);
-    if (!badge) {
-      badge = document.createElement("div");
-      badge.id = BADGE_ID;
-      document.documentElement.appendChild(badge);
+  // src/platforms/youtube/routes.ts
+  var SHORTS_PATH = /^\/shorts\/([A-Za-z0-9_-]+)/;
+  function classifyYoutubeRoute(pathname) {
+    const shortsMatch = SHORTS_PATH.exec(pathname);
+    if (shortsMatch?.[1]) {
+      return { kind: "shorts-redirect", videoId: shortsMatch[1] };
     }
-    badge.textContent = `socialmerd hello \xB7 ${site} \xB7 ${"dev"} \xB7 visite: ${count}`;
+    if (pathname === "/watch") {
+      return { kind: "watch" };
+    }
+    return { kind: "browse" };
   }
-  async function main() {
+  function watchUrlFor(videoId) {
+    return `/watch?v=${videoId}`;
+  }
+
+  // src/platforms/youtube/selectors.ts
+  var SHORTS = {
+    // verified 2026-09-17 (point p): every individual Shorts card (home feed,
+    // search results, channel) is exactly one of these, always wrapping an
+    // `a[href^="/shorts/"]`. 8/8 Shorts cards in the home capture matched.
+    lockupTag: "ytm-shorts-lockup-view-model",
+    // verified 2026-09-17 (point p): the shelf wrapper around a Shorts row in
+    // home. This tag is generic (also wraps non-Shorts shelves, e.g. "Ultime
+    // notizie" in the same capture) -- only hide an instance that actually
+    // contains a `lockupTag` descendant, never unconditionally.
+    shelfWrapperTag: "ytm-rich-section-renderer",
+    // verified 2026-09-17 (point p): the bottom tab bar's Shorts entry carries
+    // this semantic (non-hashed) class on its tab/title elements, alongside
+    // Home/Iscrizioni/Tu using the equivalent pivot-w2w/pivot-subs/pivot-you.
+    bottomTabItemTag: "ytm-pivot-bar-item-renderer",
+    bottomTabClass: "pivot-shorts",
+    // verified 2026-09-17 (point p): fallback for a Shorts link rendered
+    // outside a `lockupTag` card -- observed in the home capture's "Ultime
+    // notizie" shelf (a `shelfWrapperTag` mixed with normal /watch cards, so
+    // the whole shelf must NOT be hidden): `ytm-video-with-context-renderer >
+    // ytm-media-item.big-shorts-singleton > a[href^="/shorts/"]`. Hide the
+    // nearest `ytm-video-with-context-renderer` ancestor so the whole card
+    // (thumbnail + metadata) disappears, not just the link.
+    looseLinkSelector: 'a[href^="/shorts/"]',
+    looseLinkCardAncestorSelector: "ytm-video-with-context-renderer"
+  };
+
+  // src/platforms/youtube/shorts-hider.ts
+  function hide2(el, marker) {
+    if (!markProcessed(el, marker)) return;
+    el.style.display = "none";
+  }
+  function hideShelvesContainingShorts(root) {
+    for (const shelf of root.querySelectorAll(SHORTS.shelfWrapperTag)) {
+      if (!shelf.querySelector(SHORTS.lockupTag)) continue;
+      hide2(shelf, "yt-shorts-shelf");
+    }
+  }
+  function hideBottomTab(root) {
+    for (const item of root.querySelectorAll(SHORTS.bottomTabItemTag)) {
+      if (!item.querySelector(`.${SHORTS.bottomTabClass}`)) continue;
+      hide2(item, "yt-shorts-tab");
+    }
+  }
+  function hideLooseShortsLinks(root) {
+    for (const link of root.querySelectorAll(SHORTS.looseLinkSelector)) {
+      const card = link.closest(SHORTS.looseLinkCardAncestorSelector) ?? link;
+      hide2(card, "yt-shorts-loose-link");
+    }
+  }
+  var processShortsHider = (root) => {
+    hideShelvesContainingShorts(root);
+    hideBottomTab(root);
+    hideLooseShortsLinks(root);
+  };
+
+  // src/platforms/youtube/index.ts
+  function redirectAwayFromShorts(route) {
+    if (route.kind !== "shorts-redirect" || !route.videoId) return;
+    void incrementBlock("blocked_route");
+    location.replace(watchUrlFor(route.videoId));
+  }
+  function startYoutubePlatform() {
+    redirectAwayFromShorts(classifyYoutubeRoute(location.pathname));
+    const stopWatching = watchUrl((url) => {
+      redirectAwayFromShorts(classifyYoutubeRoute(new URL(url, location.origin).pathname));
+    });
+    const unregister = registerProcessor(processShortsHider);
+    return () => {
+      stopWatching();
+      unregister();
+    };
+  }
+
+  // src/main.ts
+  function main() {
     const site = detectSite();
     if (!site) return;
     if (site === "instagram") {
       startInstagramPlatform();
-      return;
+    } else {
+      startYoutubePlatform();
     }
-    const count = await getValue(COUNT_KEY, 0) + 1;
-    await setValue(COUNT_KEY, count);
-    renderBadge(site, count);
   }
-  void main();
+  main();
 })();
