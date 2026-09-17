@@ -9,7 +9,7 @@
 - [x] Fase 3 — Core — moduli generici (storage/migrazioni, url-watcher, dom-scheduler, i18n, log, silent-nav, blocks, host UI Shadow DOM), 51 test unitari verdi. Completata prima della Fase 2 perche' non dipende dai selettori reali di IG/YT; non ancora agganciata a `src/main.ts`
 - [ ] Fase 4 — Instagram — **codice scritto, test unitari/DOM verdi** (routes, route-guard, nav-cleanup, app-banners, explore-search, feed-filter, feed-reels-placeholder, feed-limiter, stories-ads, reel-lock, account, `platforms/instagram/index.ts` agganciato a `main.ts`). Mancano solo gli **scenari live §7.3** (non ancora eseguiti) e la rifinitura di reel-lock.ts/stories-ads.ts sui punti ancora aperti dello spike (d, i) — vedi commenti `TODO` nei rispettivi file e `docs/spike-findings.md`
 - [ ] Fase 5 — YouTube — **codice scritto, test unitari/DOM verdi** (routes, selectors, section, shorts-hider, `platforms/youtube/index.ts` agganciato a `main.ts`). Selettori aggiornati secondo `docs/spike-findings.md` punto (p) (`ytm-reel-shelf-renderer`/`ytm-reel-item-renderer` del piano originale non esistono più). Manca solo lo **scenario live YT di §7.3** (non ancora eseguito)
-- [ ] Fase 6 — Statistiche e UI
+- [ ] Fase 6 — Statistiche e UI — **codice scritto, test unitari/DOM verdi** (settings, features/stats, contatore marker in dom-scheduler, core/ui/{bars,pill,panel,welcome,debug-overlay}, i18n IT/EN estesi, `time-tracker`/`update-check` agganciati a `main.ts`). **Manca la verifica visiva** su emulatore/iPhone (posizione pillola sopra la nav bar, tema chiaro/scuro, `isFullscreenVideo` su YouTube — vedi TODO in `src/main.ts`, mai verificato dal vivo)
 - [ ] Fase 7 — Release v1.0.0 (+ Greasy Fork)
 - [ ] Fase 8 — (prodotto fase 2) Layout desktop PC/iPad — NON in v1
 

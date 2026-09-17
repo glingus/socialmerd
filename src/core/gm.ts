@@ -1,7 +1,10 @@
 // Only entry point for GM.* storage access (see CLAUDE.md).
 // Falls back to localStorage when GM is not injected (unit tests, harness).
 
-function hasGM(): boolean {
+/** Exported for the debug overlay's feature probes (docs/PIANO.md §4.6,
+ * spike point q); every other module should go through getValue/setValue
+ * instead of checking this directly. */
+export function hasGM(): boolean {
   return typeof GM !== 'undefined' && typeof GM.getValue === 'function';
 }
 

@@ -24,7 +24,10 @@ function currentStoryKey(): string {
   return media?.getAttribute('src') ?? location.href;
 }
 
-export function startInstagramPlatform(): () => void {
+/** `onRoute` fires with the initial route synchronously (before this
+ * function returns) and again on every SPA navigation -- used by main.ts to
+ * feed the time-tracker section and the pill's visibility rule. */
+export function startInstagramPlatform(onRoute?: (route: InstagramRoute) => void): () => void {
   let currentRoute: InstagramRoute = classifyInstagramRoute(location.pathname, location.search);
   const getRoute = (): InstagramRoute => currentRoute;
 
@@ -33,6 +36,7 @@ export function startInstagramPlatform(): () => void {
   const routeGuard = startRouteGuard((route) => {
     currentRoute = route;
     reelLock.handleRoute(route);
+    onRoute?.(route);
   });
 
   const processors = [

@@ -16,11 +16,20 @@ function redirectAwayFromShorts(route: YoutubeRoute): void {
   location.replace(watchUrlFor(route.videoId));
 }
 
-export function startYoutubePlatform(): () => void {
-  redirectAwayFromShorts(classifyYoutubeRoute(location.pathname));
+/** `onRoute` fires with the initial route synchronously (before this
+ * function returns) and again on every SPA navigation -- used by main.ts to
+ * feed the time-tracker section and the pill's visibility rule. */
+export function startYoutubePlatform(onRoute?: (route: YoutubeRoute) => void): () => void {
+  const classifyAndHandle = (pathname: string): void => {
+    const route = classifyYoutubeRoute(pathname);
+    onRoute?.(route);
+    redirectAwayFromShorts(route);
+  };
+
+  classifyAndHandle(location.pathname);
 
   const stopWatching = watchUrl((url) => {
-    redirectAwayFromShorts(classifyYoutubeRoute(new URL(url, location.origin).pathname));
+    classifyAndHandle(new URL(url, location.origin).pathname);
   });
 
   const unregister = registerProcessor(processShortsHider);
