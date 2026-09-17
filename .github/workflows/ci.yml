@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # scripts/build.mjs uses `git rev-list --count HEAD` for dev builds
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test
+
+      - name: Build the userscript for this branch
+        run: |
+          BRANCH="${{ github.head_ref || github.ref_name }}"
+          if [ "$BRANCH" = "main" ]; then
+            npm run build
+          else
+            npm run build:dev
+          fi
+
+      - name: Verify dist/ is committed and up to date
+        run: git diff --exit-code -- dist/

@@ -1,0 +1,8 @@
+node_modules/
+.auth/
+scripts/.meta.generated.mjs
+tests/fixtures/raw/
+test-results/
+playwright-report/
+*.log
+.DS_Store
