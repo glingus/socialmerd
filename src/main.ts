@@ -1,8 +1,12 @@
-// Entry point: detects the site, starts its platform module (Instagram
-// Fase 4, YouTube Fase 5), and wires up the shared Fase 6 extras (time
-// tracker, pill, panel, debug overlay, welcome, update-check). Fase 1's
-// "hello" debug badge, verified working on the user's iPhone (see
-// docs/PIANO.md), has served its purpose and is retired.
+// Entry point: detects the site and starts its platform module (Instagram
+// Fase 4, YouTube Fase 5) SYNCHRONOUSLY, then wires up the shared Fase 6
+// extras (time tracker, pill, panel, debug overlay, welcome, update-check)
+// asynchronously. The platform start must stay synchronous and first: it's
+// what redirects a blocked route at document-start, before paint
+// (docs/PIANO.md §3.4/§4.1) -- putting it behind an `await` (e.g. for
+// settings) would delay that guarantee by however long GM.getValue takes on
+// the real device. Fase 1's "hello" debug badge, verified working on the
+// user's iPhone (see docs/PIANO.md), has served its purpose and is retired.
 
 import { detectSite, type Site } from './core/env';
 import { detectLang, type Lang } from './core/i18n';
@@ -42,7 +46,45 @@ function metaUrlFor(channel: typeof __SMD_CHANNEL__): string | null {
   return `https://raw.githubusercontent.com/${REPO}/${branch}/dist/socialmerd.meta.js`;
 }
 
-async function bootstrap(site: Site): Promise<void> {
+interface RouteAccess {
+  getInstagramRoute: () => InstagramRoute | null;
+  getYoutubeRoute: () => YoutubeRoute | null;
+  /** Registers the single listener the UI bootstrap wants notified on every
+   * route change (there's only ever one: refreshPill below). Set once
+   * bootstrap has a listener ready; a route change before that is a no-op,
+   * which is fine since refreshPill also gets called on its own interval. */
+  setOnRouteChanged: (fn: () => void) => void;
+}
+
+/** Starts the platform's route guard/redirects synchronously and returns a
+ * way for the (later, async) UI bootstrap to read the current route. */
+function startPlatform(site: Site): RouteAccess {
+  let instagramRoute: InstagramRoute | null = null;
+  let youtubeRoute: YoutubeRoute | null = null;
+  let onRouteChanged: (() => void) | null = null;
+
+  if (site === 'instagram') {
+    startInstagramPlatform((route) => {
+      instagramRoute = route;
+      onRouteChanged?.();
+    });
+  } else {
+    startYoutubePlatform((route) => {
+      youtubeRoute = route;
+      onRouteChanged?.();
+    });
+  }
+
+  return {
+    getInstagramRoute: () => instagramRoute,
+    getYoutubeRoute: () => youtubeRoute,
+    setOnRouteChanged: (fn) => {
+      onRouteChanged = fn;
+    },
+  };
+}
+
+async function bootstrapUi(site: Site, routes: RouteAccess): Promise<void> {
   const settings = await getSettings();
   let pillEnabled = settings.pillEnabled;
   let lang: Lang = detectLang(navigator.language, settings.langOverride);
@@ -69,17 +111,13 @@ async function bootstrap(site: Site): Promise<void> {
     return false;
   }
 
-  let instagramRoute: InstagramRoute | null = null;
-  let youtubeRoute: YoutubeRoute | null = null;
-
   function getSection(): CurrentSection {
-    if (site === 'instagram' && instagramRoute) {
-      return { site: 'instagram', section: sectionForInstagramRoute(instagramRoute) };
+    if (site === 'instagram') {
+      const route = routes.getInstagramRoute();
+      return route ? { site: 'instagram', section: sectionForInstagramRoute(route) } : null;
     }
-    if (site === 'youtube' && youtubeRoute) {
-      return { site: 'youtube', section: sectionForYoutubeRoute(youtubeRoute) };
-    }
-    return null;
+    const route = routes.getYoutubeRoute();
+    return route ? { site: 'youtube', section: sectionForYoutubeRoute(route) } : null;
   }
 
   startTimeTracker({ hasRecentInteraction: () => hasRecentInteraction, isVideoPlaying, getSection });
@@ -113,20 +151,9 @@ async function bootstrap(site: Site): Promise<void> {
       pill.update(minutes, hasUpdate, hidden);
     });
   }
+  routes.setOnRouteChanged(refreshPill);
   setInterval(refreshPill, PILL_REFRESH_MS);
   refreshPill();
-
-  if (site === 'instagram') {
-    startInstagramPlatform((route) => {
-      instagramRoute = route;
-      refreshPill();
-    });
-  } else {
-    startYoutubePlatform((route) => {
-      youtubeRoute = route;
-      refreshPill();
-    });
-  }
 
   const metaUrl = metaUrlFor(__SMD_CHANNEL__);
   if (settings.updateCheckEnabled && metaUrl) {
@@ -143,7 +170,9 @@ async function bootstrap(site: Site): Promise<void> {
 function main(): void {
   const site = detectSite();
   if (!site) return;
-  void bootstrap(site);
+
+  const routes = startPlatform(site);
+  void bootstrapUi(site, routes);
 }
 
 main();
