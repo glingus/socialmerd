@@ -4,6 +4,14 @@
 // use different wording ("Partnership retribuita con…") and are
 // deliberately NOT matched here, so they stay visible per the plan.
 //
+// The Follow button check is deliberately scoped to actual button/role=button
+// elements with an exact (trimmed) text match, NOT a substring check against
+// the whole post like SPONSORED_LABEL/SUGGESTED_FOR_YOU_HEADING below: "Segui"
+// and "Follow" are common standalone words ("Segui il link in bio" is a very
+// common Italian caption) that would otherwise false-positive and hide a
+// legitimate followed-account post. The plan itself specifies "bottone
+// Segui/Follow" (a button), not just the word appearing anywhere.
+//
 // TODO (needs live verification, docs/spike-findings.md point b): the plan
 // also calls for hiding suggested-account/suggested-reel *shelves* (carousel
 // blocks between posts, not individual posts). No sponsored/suggested post
@@ -20,9 +28,16 @@ const HIDE_TEXTS = new Set<string>([
   ...SPONSORED_LABEL.en,
   ...SUGGESTED_FOR_YOU_HEADING.it,
   ...SUGGESTED_FOR_YOU_HEADING.en,
-  ...FOLLOW_BUTTON.it,
-  ...FOLLOW_BUTTON.en,
 ]);
+
+const FOLLOW_TEXTS = new Set<string>([...FOLLOW_BUTTON.it, ...FOLLOW_BUTTON.en]);
+
+function hasFollowButton(post: Element): boolean {
+  for (const el of post.querySelectorAll('button, [role="button"]')) {
+    if (FOLLOW_TEXTS.has(el.textContent?.trim() ?? '')) return true;
+  }
+  return false;
+}
 
 export function processFeedFilter(root: ParentNode, route: InstagramRoute): void {
   if (route.kind !== 'feed') return;
@@ -30,7 +45,7 @@ export function processFeedFilter(root: ParentNode, route: InstagramRoute): void
   for (const post of root.querySelectorAll(FEED.postSelector)) {
     if (!markProcessed(post, 'feed-filter')) continue;
     const text = post.textContent ?? '';
-    const shouldHide = [...HIDE_TEXTS].some((needle) => text.includes(needle));
+    const shouldHide = [...HIDE_TEXTS].some((needle) => text.includes(needle)) || hasFollowButton(post);
     if (shouldHide) {
       post.style.display = 'none';
     }

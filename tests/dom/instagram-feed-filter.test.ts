@@ -26,6 +26,12 @@ describe('processFeedFilter', () => {
     expect((document.querySelector('article') as HTMLElement).style.display).toBe('none');
   });
 
+  it('hides a post with a div[role="button"] Follow control, not just a real <button>', () => {
+    document.body.innerHTML = article('<header>someone <div role="button">Follow</div></header>');
+    processFeedFilter(document.body, FEED);
+    expect((document.querySelector('article') as HTMLElement).style.display).toBe('none');
+  });
+
   it('hides a post labeled "Suggeriti per te"', () => {
     document.body.innerHTML = article('<header>someone · Suggeriti per te</header>');
     processFeedFilter(document.body, FEED);
@@ -34,6 +40,18 @@ describe('processFeedFilter', () => {
 
   it('does not hide a plain followed-account post', () => {
     document.body.innerHTML = article('<header>juventus</header><p>ZEKIIIIII, 4-0!</p>');
+    processFeedFilter(document.body, FEED);
+    expect((document.querySelector('article') as HTMLElement).style.display).toBe('');
+  });
+
+  it('does not hide a followed-account post whose caption merely contains the word "Segui"/"Follow"', () => {
+    document.body.innerHTML = article('<header>juventus</header><p>Segui il link in bio per il video completo</p>');
+    processFeedFilter(document.body, FEED);
+    expect((document.querySelector('article') as HTMLElement).style.display).toBe('');
+  });
+
+  it('does not hide a followed-account post captioned "Follow your dreams"', () => {
+    document.body.innerHTML = article('<header>juventus</header><p>Follow your dreams, not the crowd</p>');
     processFeedFilter(document.body, FEED);
     expect((document.querySelector('article') as HTMLElement).style.display).toBe('');
   });
