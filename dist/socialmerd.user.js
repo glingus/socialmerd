@@ -3,7 +3,7 @@
 // @namespace    https://github.com/glingus/socialmerd
 // @description  Instagram and YouTube without the addictive parts, in the Orion browser on iPhone (via Tampermonkey).
 // @description:it  Instagram e YouTube senza le parti che creano dipendenza, nel browser Orion su iPhone (tramite Tampermonkey).
-// @version      0.1.0.11
+// @version      0.1.0.13
 // @license      GPL-3.0-or-later
 // @match        https://www.instagram.com/*
 // @match        https://instagram.com/*
@@ -38,10 +38,220 @@
     return null;
   }
 
+  // src/core/i18n/en.ts
+  var en = {
+    "welcome.title": "Welcome to socialmerd",
+    "welcome.intro": "socialmerd quietly removes the parts of Instagram and YouTube built to keep you scrolling.",
+    "welcome.blockedIntro": "What's blocked, always on, no toggle:",
+    "welcome.blockedInstagram": "Instagram: no Reels tab or feed reels, no suggested content, no Explore grid. Home feed stops at posts you already saw.",
+    "welcome.blockedYoutube": "YouTube: no Shorts, anywhere.",
+    "welcome.tipsTitle": "For it to actually work every time:",
+    "welcome.tipUninstall": "Uninstall the official Instagram and YouTube apps.",
+    "welcome.tipShortcut": "Add a Home Screen icon with a Shortcut (Shortcuts app -> Open URL -> Add to Home Screen).",
+    "welcome.tipDefaultBrowser": "Set Orion as your default browser, so links from other apps open here too.",
+    "welcome.tipTampermonkey": "Check that socialmerd is enabled in Tampermonkey.",
+    "welcome.close": "Got it",
+    "pill.ariaLabel": "socialmerd \u2014 usage time, tap for details",
+    "pill.minutes": "{{n}} min today",
+    "panel.today": "Today",
+    "panel.last7days": "Last 7 days",
+    "panel.blocksSnapped": "Blocks stopped",
+    "panel.settings": "Settings",
+    "panel.info": "Info",
+    "panel.instagram": "Instagram",
+    "panel.youtube": "YouTube",
+    "panel.pillToggle": "Show pill",
+    "panel.language": "Language",
+    "panel.languageAuto": "Auto",
+    "panel.languageIt": "Italiano",
+    "panel.languageEn": "English",
+    "panel.updateCheckToggle": "Check for updates",
+    "panel.resetStats": "Reset statistics",
+    "panel.resetStatsConfirm": "Delete all saved statistics? This cannot be undone.",
+    "panel.baseBlocksNote": "Base blocks above are not configurable \u2014 only these extras are.",
+    "panel.githubLink": "View on GitHub",
+    "panel.updateAvailable": "Update available",
+    "panel.close": "Close",
+    "section.feed": "Feed",
+    "section.dm": "Direct",
+    "section.stories": "Stories",
+    "section.profile": "Profile",
+    "section.reel": "Reel",
+    "section.search": "Search",
+    "section.other": "Other",
+    "section.video": "Videos",
+    "section.browse": "Browsing",
+    "debug.title": "Debug overlay",
+    "debug.featureProbes": "Feature probes",
+    "debug.selectorCounts": "Selector hit counts",
+    "debug.logTitle": "Last log lines",
+    "debug.noLogs": "No log lines yet.",
+    "debug.close": "Close",
+    "placeholder.watchReel": "Watch reel"
+  };
+
+  // src/core/i18n/it.ts
+  var it = {
+    "welcome.title": "Benvenuto su socialmerd",
+    "welcome.intro": "socialmerd toglie in silenzio le parti di Instagram e YouTube pensate per farti scrollare senza fine.",
+    "welcome.blockedIntro": "Cosa viene bloccato, sempre attivo, senza interruttore:",
+    "welcome.blockedInstagram": "Instagram: niente tab Reel n\xE9 reel nel feed, niente contenuti suggeriti, niente griglia Esplora. Il feed Home si ferma ai post gi\xE0 visti.",
+    "welcome.blockedYoutube": "YouTube: niente Shorts, da nessuna parte.",
+    "welcome.tipsTitle": "Perch\xE9 funzioni sempre:",
+    "welcome.tipUninstall": "Disinstalla le app ufficiali di Instagram e YouTube.",
+    "welcome.tipShortcut": "Crea un'icona sulla schermata Home con un Comando Rapido (app Comandi Rapidi -> Apri URL -> Aggiungi alla schermata Home).",
+    "welcome.tipDefaultBrowser": "Imposta Orion come browser predefinito, cos\xEC anche i link dalle altre app si aprono qui.",
+    "welcome.tipTampermonkey": "Controlla che socialmerd sia attivo in Tampermonkey.",
+    "welcome.close": "Ho capito",
+    "pill.ariaLabel": "socialmerd \u2014 tempo di utilizzo, tocca per i dettagli",
+    "pill.minutes": "{{n}} min oggi",
+    "panel.today": "Oggi",
+    "panel.last7days": "Ultimi 7 giorni",
+    "panel.blocksSnapped": "Blocchi scattati",
+    "panel.settings": "Impostazioni",
+    "panel.info": "Info",
+    "panel.instagram": "Instagram",
+    "panel.youtube": "YouTube",
+    "panel.pillToggle": "Mostra la pillola",
+    "panel.language": "Lingua",
+    "panel.languageAuto": "Auto",
+    "panel.languageIt": "Italiano",
+    "panel.languageEn": "English",
+    "panel.updateCheckToggle": "Controllo aggiornamenti",
+    "panel.resetStats": "Azzera statistiche",
+    "panel.resetStatsConfirm": "Cancellare tutte le statistiche salvate? Non si pu\xF2 annullare.",
+    "panel.baseBlocksNote": "I blocchi base qui sopra non sono disattivabili \u2014 solo questi extra lo sono.",
+    "panel.githubLink": "Vedi su GitHub",
+    "panel.updateAvailable": "Aggiornamento disponibile",
+    "panel.close": "Chiudi",
+    "section.feed": "Feed",
+    "section.dm": "Direct",
+    "section.stories": "Storie",
+    "section.profile": "Profilo",
+    "section.reel": "Reel",
+    "section.search": "Ricerca",
+    "section.other": "Altro",
+    "section.video": "Video",
+    "section.browse": "Navigazione",
+    "debug.title": "Overlay di debug",
+    "debug.featureProbes": "Sonde funzionalit\xE0",
+    "debug.selectorCounts": "Conteggi selettori",
+    "debug.logTitle": "Ultime righe di log",
+    "debug.noLogs": "Ancora nessuna riga di log.",
+    "debug.close": "Chiudi",
+    "placeholder.watchReel": "Guarda reel"
+  };
+
+  // src/core/i18n/index.ts
+  var dictionaries = { it, en };
+  function detectLang(navigatorLanguage = navigator.language, override = "auto") {
+    if (override !== "auto") return override;
+    return navigatorLanguage.toLowerCase().startsWith("it") ? "it" : "en";
+  }
+  function t(key, lang) {
+    return dictionaries[lang][key] ?? dictionaries.en[key];
+  }
+  function tf(key, lang, params) {
+    return t(key, lang).replace(/\{\{(\w+)\}\}/g, (match, name) => String(params[name] ?? match));
+  }
+
+  // src/core/gm.ts
+  function hasGM() {
+    return typeof GM !== "undefined" && typeof GM.getValue === "function";
+  }
+  async function getValue(key, defaultValue) {
+    if (hasGM()) {
+      return GM.getValue(key, defaultValue);
+    }
+    const raw = localStorage.getItem(key);
+    if (raw === null) return defaultValue;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return defaultValue;
+    }
+  }
+  async function setValue(key, value) {
+    if (hasGM()) {
+      return GM.setValue(key, value);
+    }
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+  async function deleteValue(key) {
+    if (hasGM()) {
+      return GM.deleteValue(key);
+    }
+    localStorage.removeItem(key);
+  }
+  async function listValues() {
+    if (hasGM()) {
+      return GM.listValues();
+    }
+    return Object.keys(localStorage);
+  }
+
+  // src/core/settings.ts
+  var SETTINGS_KEY = "smd:v1:settings";
+  function defaultSettings() {
+    return { pillEnabled: true, langOverride: "auto", updateCheckEnabled: true };
+  }
+  async function getSettings() {
+    return getValue(SETTINGS_KEY, defaultSettings());
+  }
+  async function setSettings(settings) {
+    await setValue(SETTINGS_KEY, settings);
+  }
+  async function updateSettings(patch) {
+    const next = { ...await getSettings(), ...patch };
+    await setSettings(next);
+    return next;
+  }
+
+  // src/core/storage.ts
+  function emptyDayStats() {
+    return {
+      ig: { feed: 0, dm: 0, stories: 0, profile: 0, reel: 0, search: 0, other: 0 },
+      yt: { video: 0, browse: 0 },
+      blocks: { reel_next: 0, blocked_route: 0, feed_end: 0 }
+    };
+  }
+  var DAY_KEY_PREFIX = "smd:v1:stats:";
+  function dayKey(date) {
+    return `${DAY_KEY_PREFIX}${date.toISOString().slice(0, 10)}`;
+  }
+  async function getDayStats(date = /* @__PURE__ */ new Date()) {
+    return getValue(dayKey(date), emptyDayStats());
+  }
+  async function setDayStats(stats, date = /* @__PURE__ */ new Date()) {
+    await setValue(dayKey(date), stats);
+  }
+  async function pruneOldDayStats(retentionDays = 35, now = /* @__PURE__ */ new Date()) {
+    const cutoff = new Date(now);
+    cutoff.setDate(cutoff.getDate() - retentionDays);
+    const cutoffSuffix = dayKey(cutoff).slice(DAY_KEY_PREFIX.length);
+    const keys = await listValues();
+    for (const key of keys) {
+      if (!key.startsWith(DAY_KEY_PREFIX)) continue;
+      const suffix = key.slice(DAY_KEY_PREFIX.length);
+      if (suffix < cutoffSuffix) {
+        await deleteValue(key);
+      }
+    }
+  }
+  async function resetAllStats() {
+    const keys = await listValues();
+    for (const key of keys) {
+      if (key.startsWith(DAY_KEY_PREFIX)) {
+        await deleteValue(key);
+      }
+    }
+  }
+
   // src/core/dom-scheduler.ts
   var processors = /* @__PURE__ */ new Set();
   var observer = null;
   var scheduled = false;
+  var markerCounts = /* @__PURE__ */ new Map();
   function runProcessors() {
     scheduled = false;
     for (const processor of processors) {
@@ -82,7 +292,827 @@
     const attr = `data-smd-${marker}`;
     if (el.hasAttribute(attr)) return false;
     el.setAttribute(attr, "");
+    markerCounts.set(marker, (markerCounts.get(marker) ?? 0) + 1);
     return true;
+  }
+  function getMarkerCounts() {
+    return new Map(markerCounts);
+  }
+
+  // src/core/log.ts
+  var buffer = [];
+  function getLogEntries() {
+    return buffer;
+  }
+
+  // src/core/styles.ts
+  function injectStyle(css, id) {
+    const existing = document.getElementById(id);
+    if (existing) {
+      existing.textContent = css;
+      return;
+    }
+    const style = document.createElement("style");
+    style.id = id;
+    style.textContent = css;
+    document.documentElement.appendChild(style);
+  }
+
+  // src/core/ui/debug-overlay.ts
+  var STYLE_ID = "smd-debug-style";
+  var CSS = `
+.smd-debug-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483004;
+  background: rgba(0, 0, 0, 0.6);
+}
+.smd-debug-backdrop[hidden] { display: none; }
+.smd-debug {
+  position: fixed;
+  inset: 40px 12px;
+  overflow-y: auto;
+  padding: 16px;
+  border-radius: 12px;
+  background: #111;
+  color: #0f0;
+  font: 11px/1.5 ui-monospace, 'SF Mono', monospace;
+}
+.smd-debug[hidden] { display: none; }
+.smd-debug h3 { margin: 12px 0 4px; color: #fff; font-size: 12px; text-transform: uppercase; }
+.smd-debug-close {
+  display: block;
+  margin-left: auto;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font: inherit;
+}
+.smd-debug-line { white-space: pre-wrap; word-break: break-word; }
+.smd-debug-line.warn { color: #ff0; }
+.smd-debug-line.error { color: #f55; }
+`;
+  function probeFeatures() {
+    return {
+      hasGM: hasGM(),
+      hasNavigationApi: typeof window.navigation !== "undefined",
+      unsafeWindowType: typeof window.unsafeWindow
+    };
+  }
+  function createDebugOverlay(host, lang) {
+    injectStyle(CSS, STYLE_ID);
+    const backdrop = document.createElement("div");
+    backdrop.className = "smd-debug-backdrop";
+    backdrop.hidden = true;
+    const panel = document.createElement("div");
+    panel.className = "smd-debug";
+    panel.hidden = true;
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-modal", "true");
+    const close = () => {
+      backdrop.hidden = true;
+      panel.hidden = true;
+    };
+    backdrop.addEventListener("click", close);
+    function render() {
+      const closeButton = document.createElement("button");
+      closeButton.type = "button";
+      closeButton.className = "smd-debug-close";
+      closeButton.textContent = t("debug.close", lang);
+      closeButton.addEventListener("click", close);
+      const title = document.createElement("h2");
+      title.textContent = t("debug.title", lang);
+      const probesHeading = document.createElement("h3");
+      probesHeading.textContent = t("debug.featureProbes", lang);
+      const probes = probeFeatures();
+      const probesLines = document.createElement("div");
+      probesLines.className = "smd-debug-line";
+      probesLines.textContent = [
+        `GM: ${probes.hasGM}`,
+        `navigation API: ${probes.hasNavigationApi}`,
+        `typeof unsafeWindow: ${probes.unsafeWindowType}`
+      ].join("\n");
+      const countsHeading = document.createElement("h3");
+      countsHeading.textContent = t("debug.selectorCounts", lang);
+      const countsLines = document.createElement("div");
+      countsLines.className = "smd-debug-line";
+      const counts = [...getMarkerCounts().entries()];
+      countsLines.textContent = counts.length > 0 ? counts.map(([marker, n]) => `${marker}: ${n}`).join("\n") : t("debug.noLogs", lang);
+      const logHeading = document.createElement("h3");
+      logHeading.textContent = t("debug.logTitle", lang);
+      const logEntries = getLogEntries();
+      const logContainer = document.createElement("div");
+      if (logEntries.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "smd-debug-line";
+        empty.textContent = t("debug.noLogs", lang);
+        logContainer.appendChild(empty);
+      } else {
+        for (const entry of [...logEntries].reverse()) {
+          const line = document.createElement("div");
+          line.className = `smd-debug-line ${entry.level}`;
+          const time = new Date(entry.time).toISOString().slice(11, 19);
+          line.textContent = `[${time}] ${entry.message}`;
+          logContainer.appendChild(line);
+        }
+      }
+      panel.replaceChildren(
+        closeButton,
+        title,
+        probesHeading,
+        probesLines,
+        countsHeading,
+        countsLines,
+        logHeading,
+        logContainer
+      );
+    }
+    host.mount(backdrop);
+    host.mount(panel);
+    return {
+      open() {
+        render();
+        backdrop.hidden = false;
+        panel.hidden = false;
+      },
+      close,
+      isOpen() {
+        return !panel.hidden;
+      },
+      destroy() {
+        backdrop.remove();
+        panel.remove();
+      }
+    };
+  }
+
+  // src/core/ui/host.ts
+  var HOST_ID = "smd-ui-host";
+  function getHost() {
+    let host = document.getElementById(HOST_ID);
+    if (!host) {
+      host = document.createElement("div");
+      host.id = HOST_ID;
+      host.style.all = "initial";
+      (document.body ?? document.documentElement).appendChild(host);
+    }
+    const shadowRoot = host.shadowRoot ?? host.attachShadow({ mode: "open" });
+    return {
+      shadowRoot,
+      mount(el) {
+        shadowRoot.appendChild(el);
+      }
+    };
+  }
+
+  // src/features/stats.ts
+  function isoDate(date) {
+    return date.toISOString().slice(0, 10);
+  }
+  async function getLast7Days(now = /* @__PURE__ */ new Date()) {
+    const days = [];
+    for (let i = 6; i >= 0; i -= 1) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      days.push({ date: isoDate(date), stats: await getDayStats(date) });
+    }
+    return days;
+  }
+  function sumSeconds(section2) {
+    return Object.values(section2).reduce((total, seconds) => total + seconds, 0);
+  }
+  function igMinutes(stats) {
+    return Math.round(sumSeconds(stats.ig) / 60);
+  }
+  function ytMinutes(stats) {
+    return Math.round(sumSeconds(stats.yt) / 60);
+  }
+  function totalBlocks(stats) {
+    return sumSeconds(stats.blocks);
+  }
+
+  // src/core/ui/bars.ts
+  function computeBarHeights(values) {
+    const max = Math.max(0, ...values.map((v) => v.value));
+    return values.map((v) => ({ ...v, heightPercent: max === 0 ? 0 : Math.round(v.value / max * 100) }));
+  }
+  function renderBars(values, unitLabel) {
+    const container = document.createElement("div");
+    container.className = "smd-bars";
+    for (const bar of computeBarHeights(values)) {
+      const col = document.createElement("div");
+      col.className = "smd-bars-col";
+      col.setAttribute("role", "img");
+      col.setAttribute("aria-label", `${bar.label}: ${unitLabel(bar.value)}`);
+      const track = document.createElement("div");
+      track.className = "smd-bars-track";
+      const fill = document.createElement("div");
+      fill.className = "smd-bars-fill";
+      fill.style.height = `${bar.heightPercent}%`;
+      track.appendChild(fill);
+      const label = document.createElement("span");
+      label.className = "smd-bars-label";
+      label.textContent = bar.label;
+      col.append(track, label);
+      container.appendChild(col);
+    }
+    return container;
+  }
+
+  // src/core/ui/panel.ts
+  var STYLE_ID2 = "smd-panel-style";
+  var DEBUG_TAP_COUNT = 5;
+  var DEBUG_TAP_WINDOW_MS = 2e3;
+  var CSS2 = `
+.smd-panel-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483001;
+  background: rgba(0, 0, 0, 0.4);
+}
+.smd-panel-backdrop[hidden] { display: none; }
+.smd-panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2147483002;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  border-radius: 16px 16px 0 0;
+  background: #1c1c1e;
+  color: #fff;
+  font: 14px/1.5 -apple-system, system-ui, sans-serif;
+}
+.smd-panel[hidden] { display: none; }
+@media (prefers-color-scheme: light) {
+  .smd-panel { background: #fff; color: #111; }
+}
+.smd-panel-close {
+  display: block;
+  margin: 0 0 12px auto;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(127, 127, 127, 0.2);
+  color: inherit;
+  font: inherit;
+}
+.smd-panel-section { margin-bottom: 20px; }
+.smd-panel-section h3 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; opacity: 0.6; }
+.smd-panel-row { display: flex; justify-content: space-between; padding: 4px 0; }
+.smd-panel-row label { display: flex; justify-content: space-between; width: 100%; align-items: center; gap: 8px; }
+.smd-panel-button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 69, 58, 0.15);
+  color: #ff453a;
+  font: inherit;
+}
+.smd-panel-link { color: #4da3ff; }
+.smd-panel-note { opacity: 0.6; font-size: 12px; margin-top: 8px; }
+.smd-bars { display: flex; gap: 6px; align-items: flex-end; height: 60px; }
+.smd-bars-col { display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; }
+.smd-bars-track { flex: 1; width: 100%; display: flex; align-items: flex-end; }
+.smd-bars-fill { width: 100%; min-height: 2px; border-radius: 3px; background: #4da3ff; }
+.smd-bars-label { font-size: 10px; opacity: 0.6; margin-top: 4px; }
+`;
+  function row(labelText, valueText) {
+    const el = document.createElement("div");
+    el.className = "smd-panel-row";
+    const label = document.createElement("span");
+    label.textContent = labelText;
+    const value = document.createElement("span");
+    value.textContent = valueText;
+    el.append(label, value);
+    return el;
+  }
+  function section(titleText) {
+    const el = document.createElement("div");
+    el.className = "smd-panel-section";
+    const heading = document.createElement("h3");
+    heading.textContent = titleText;
+    el.appendChild(heading);
+    return el;
+  }
+  function buildTodaySection(today, lang) {
+    const el = section(t("panel.today", lang));
+    el.appendChild(row(t("panel.instagram", lang), `${igMinutes(today)} min`));
+    const igSections = [
+      ["feed", "section.feed"],
+      ["dm", "section.dm"],
+      ["stories", "section.stories"],
+      ["profile", "section.profile"],
+      ["reel", "section.reel"],
+      ["search", "section.search"],
+      ["other", "section.other"]
+    ];
+    for (const [key, labelKey] of igSections) {
+      const seconds = today.ig[key];
+      if (seconds === 0) continue;
+      el.appendChild(row(`\xB7 ${t(labelKey, lang)}`, `${Math.round(seconds / 60)} min`));
+    }
+    el.appendChild(row(t("panel.youtube", lang), `${ytMinutes(today)} min`));
+    const ytSections = [
+      ["video", "section.video"],
+      ["browse", "section.browse"]
+    ];
+    for (const [key, labelKey] of ytSections) {
+      const seconds = today.yt[key];
+      if (seconds === 0) continue;
+      el.appendChild(row(`\xB7 ${t(labelKey, lang)}`, `${Math.round(seconds / 60)} min`));
+    }
+    return el;
+  }
+  function weekdayLabel(dateIso, lang) {
+    const weekday = (/* @__PURE__ */ new Date(`${dateIso}T00:00:00Z`)).toLocaleDateString(lang === "it" ? "it-IT" : "en-US", {
+      weekday: "short",
+      timeZone: "UTC"
+    });
+    return weekday.slice(0, 3);
+  }
+  function buildWeekSection(days, lang) {
+    const el = section(t("panel.last7days", lang));
+    const igRow = document.createElement("div");
+    const igLabel = document.createElement("div");
+    igLabel.className = "smd-panel-note";
+    igLabel.textContent = t("panel.instagram", lang);
+    igRow.appendChild(igLabel);
+    igRow.appendChild(
+      renderBars(
+        days.map((d) => ({ label: weekdayLabel(d.date, lang), value: igMinutes(d.stats) })),
+        (v) => `${v} min`
+      )
+    );
+    el.appendChild(igRow);
+    const ytRow = document.createElement("div");
+    ytRow.style.marginTop = "12px";
+    const ytLabel = document.createElement("div");
+    ytLabel.className = "smd-panel-note";
+    ytLabel.textContent = t("panel.youtube", lang);
+    ytRow.appendChild(ytLabel);
+    ytRow.appendChild(
+      renderBars(
+        days.map((d) => ({ label: weekdayLabel(d.date, lang), value: ytMinutes(d.stats) })),
+        (v) => `${v} min`
+      )
+    );
+    el.appendChild(ytRow);
+    return el;
+  }
+  function buildBlocksSection(today, days, lang) {
+    const el = section(t("panel.blocksSnapped", lang));
+    const weekTotal = days.reduce((sum, d) => sum + totalBlocks(d.stats), 0);
+    el.appendChild(row(t("panel.today", lang), String(totalBlocks(today))));
+    el.appendChild(row(t("panel.last7days", lang), String(weekTotal)));
+    return el;
+  }
+  function buildSettingsSection(settings, lang, onChange) {
+    const el = section(t("panel.settings", lang));
+    const pillRow = document.createElement("div");
+    pillRow.className = "smd-panel-row";
+    const pillLabel = document.createElement("label");
+    const pillText = document.createElement("span");
+    pillText.textContent = t("panel.pillToggle", lang);
+    const pillCheckbox = document.createElement("input");
+    pillCheckbox.type = "checkbox";
+    pillCheckbox.checked = settings.pillEnabled;
+    pillCheckbox.addEventListener("change", () => onChange({ pillEnabled: pillCheckbox.checked }));
+    pillLabel.append(pillText, pillCheckbox);
+    pillRow.appendChild(pillLabel);
+    el.appendChild(pillRow);
+    const updateRow = document.createElement("div");
+    updateRow.className = "smd-panel-row";
+    const updateLabel = document.createElement("label");
+    const updateText = document.createElement("span");
+    updateText.textContent = t("panel.updateCheckToggle", lang);
+    const updateCheckbox = document.createElement("input");
+    updateCheckbox.type = "checkbox";
+    updateCheckbox.checked = settings.updateCheckEnabled;
+    updateCheckbox.addEventListener("change", () => onChange({ updateCheckEnabled: updateCheckbox.checked }));
+    updateLabel.append(updateText, updateCheckbox);
+    updateRow.appendChild(updateLabel);
+    el.appendChild(updateRow);
+    const langRow = document.createElement("div");
+    langRow.className = "smd-panel-row";
+    const langLabel = document.createElement("label");
+    const langText = document.createElement("span");
+    langText.textContent = t("panel.language", lang);
+    const langSelect = document.createElement("select");
+    const options = [
+      ["auto", t("panel.languageAuto", lang)],
+      ["it", t("panel.languageIt", lang)],
+      ["en", t("panel.languageEn", lang)]
+    ];
+    for (const [value, text] of options) {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = text;
+      option.selected = settings.langOverride === value;
+      langSelect.appendChild(option);
+    }
+    langSelect.addEventListener("change", () => onChange({ langOverride: langSelect.value }));
+    langLabel.append(langText, langSelect);
+    langRow.appendChild(langLabel);
+    el.appendChild(langRow);
+    const resetButton = document.createElement("button");
+    resetButton.type = "button";
+    resetButton.className = "smd-panel-button";
+    resetButton.textContent = t("panel.resetStats", lang);
+    resetButton.addEventListener("click", () => {
+      if (!confirm(t("panel.resetStatsConfirm", lang))) return;
+      void resetAllStats();
+    });
+    el.appendChild(resetButton);
+    const note = document.createElement("p");
+    note.className = "smd-panel-note";
+    note.textContent = t("panel.baseBlocksNote", lang);
+    el.appendChild(note);
+    return el;
+  }
+  function buildInfoSection(version, channel, lang, hasUpdate, onDebugTap) {
+    const el = section(t("panel.info", lang));
+    let taps = 0;
+    let tapTimer = null;
+    const versionLine = document.createElement("p");
+    versionLine.textContent = `socialmerd ${version} (${channel})`;
+    versionLine.addEventListener("click", () => {
+      taps += 1;
+      if (tapTimer) clearTimeout(tapTimer);
+      tapTimer = setTimeout(() => {
+        taps = 0;
+      }, DEBUG_TAP_WINDOW_MS);
+      if (taps >= DEBUG_TAP_COUNT) {
+        taps = 0;
+        if (tapTimer) clearTimeout(tapTimer);
+        onDebugTap();
+      }
+    });
+    el.appendChild(versionLine);
+    if (hasUpdate) {
+      const updateLine = document.createElement("p");
+      updateLine.textContent = t("panel.updateAvailable", lang);
+      el.appendChild(updateLine);
+    }
+    const link = document.createElement("a");
+    link.className = "smd-panel-link";
+    link.href = "https://github.com/glingus/socialmerd";
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = t("panel.githubLink", lang);
+    el.appendChild(link);
+    return el;
+  }
+  function createPanel(host, options) {
+    injectStyle(CSS2, STYLE_ID2);
+    const backdrop = document.createElement("div");
+    backdrop.className = "smd-panel-backdrop";
+    backdrop.hidden = true;
+    const sheet = document.createElement("div");
+    sheet.className = "smd-panel";
+    sheet.hidden = true;
+    sheet.setAttribute("role", "dialog");
+    sheet.setAttribute("aria-modal", "true");
+    const close = () => {
+      backdrop.hidden = true;
+      sheet.hidden = true;
+    };
+    backdrop.addEventListener("click", close);
+    const closeButton = document.createElement("button");
+    closeButton.type = "button";
+    closeButton.className = "smd-panel-close";
+    closeButton.addEventListener("click", close);
+    host.mount(backdrop);
+    host.mount(sheet);
+    async function render() {
+      const lang = options.getLang();
+      closeButton.textContent = t("panel.close", lang);
+      const [days, settings] = await Promise.all([getLast7Days(), getSettings()]);
+      const today = days[days.length - 1]?.stats;
+      if (!today) return;
+      sheet.replaceChildren(
+        closeButton,
+        buildTodaySection(today, lang),
+        buildWeekSection(days, lang),
+        buildBlocksSection(today, days, lang),
+        buildSettingsSection(settings, lang, (patch) => {
+          void updateSettings(patch).then((next) => {
+            options.onSettingsChanged?.(next);
+            void render();
+          });
+        }),
+        buildInfoSection(options.version, options.channel, lang, options.hasUpdate?.() ?? false, () => {
+          close();
+          options.onDebugTap?.();
+        })
+      );
+    }
+    return {
+      open() {
+        backdrop.hidden = false;
+        sheet.hidden = false;
+        return render();
+      },
+      close,
+      isOpen() {
+        return !sheet.hidden;
+      },
+      toggle() {
+        if (sheet.hidden) {
+          backdrop.hidden = false;
+          sheet.hidden = false;
+          return render();
+        }
+        close();
+        return void 0;
+      },
+      destroy() {
+        backdrop.remove();
+        sheet.remove();
+      }
+    };
+  }
+
+  // src/core/ui/pill.ts
+  var INSTAGRAM_HIDDEN_PREFIXES = ["/direct/t/", "/stories/", "/reel/", "/create/", "/accounts/"];
+  function shouldHidePill(ctx) {
+    if (ctx.site === "instagram") {
+      return INSTAGRAM_HIDDEN_PREFIXES.some((prefix) => ctx.pathname.startsWith(prefix));
+    }
+    return Boolean(ctx.isFullscreenVideo);
+  }
+  var STYLE_ID3 = "smd-pill-style";
+  var CSS3 = `
+.smd-pill {
+  position: fixed;
+  right: 12px;
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(20, 20, 20, 0.72);
+  color: #fff;
+  font: 500 12px/1.4 -apple-system, system-ui, sans-serif;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px);
+}
+.smd-pill[hidden] { display: none; }
+.smd-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4da3ff;
+}
+.smd-pill-dot[hidden] { display: none; }
+@media (prefers-color-scheme: light) {
+  .smd-pill { background: rgba(255, 255, 255, 0.85); color: #111; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15); }
+}
+`;
+  function createPill(host, lang, onActivate) {
+    injectStyle(CSS3, STYLE_ID3);
+    const el = document.createElement("button");
+    el.type = "button";
+    el.className = "smd-pill";
+    el.setAttribute("aria-label", t("pill.ariaLabel", lang));
+    el.addEventListener("click", onActivate);
+    const text = document.createElement("span");
+    text.className = "smd-pill-text";
+    const dot = document.createElement("span");
+    dot.className = "smd-pill-dot";
+    dot.hidden = true;
+    dot.setAttribute("aria-hidden", "true");
+    el.append(text, dot);
+    host.mount(el);
+    return {
+      update(minutesToday, hasUpdate, hidden) {
+        el.hidden = hidden;
+        text.textContent = tf("pill.minutes", lang, { n: minutesToday });
+        dot.hidden = !hasUpdate;
+      },
+      destroy() {
+        el.remove();
+      }
+    };
+  }
+
+  // src/core/ui/welcome.ts
+  var SHOWN_KEY = "smd:v1:welcomeShown";
+  var STYLE_ID4 = "smd-welcome-style";
+  var CSS4 = `
+.smd-welcome-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483003;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(0, 0, 0, 0.55);
+}
+.smd-welcome-backdrop[hidden] { display: none; }
+.smd-welcome {
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  border-radius: 16px 16px 0 0;
+  background: #1c1c1e;
+  color: #fff;
+  font: 14px/1.5 -apple-system, system-ui, sans-serif;
+}
+@media (prefers-color-scheme: light) {
+  .smd-welcome { background: #fff; color: #111; }
+}
+.smd-welcome h2 { margin: 0 0 8px; font-size: 18px; }
+.smd-welcome h3 { margin: 16px 0 8px; font-size: 13px; text-transform: uppercase; opacity: 0.6; }
+.smd-welcome ul { margin: 0; padding-left: 20px; }
+.smd-welcome li { margin-bottom: 6px; }
+.smd-welcome-close {
+  display: block;
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #4da3ff;
+  color: #fff;
+  font: 600 15px/1 -apple-system, system-ui, sans-serif;
+}
+`;
+  async function hasSeenWelcome() {
+    return getValue(SHOWN_KEY, false);
+  }
+  async function markWelcomeSeen() {
+    await setValue(SHOWN_KEY, true);
+  }
+  function showWelcome(host, lang, onClose) {
+    injectStyle(CSS4, STYLE_ID4);
+    const backdrop = document.createElement("div");
+    backdrop.className = "smd-welcome-backdrop";
+    const sheet = document.createElement("div");
+    sheet.className = "smd-welcome";
+    sheet.setAttribute("role", "dialog");
+    sheet.setAttribute("aria-modal", "true");
+    const title = document.createElement("h2");
+    title.textContent = t("welcome.title", lang);
+    const intro = document.createElement("p");
+    intro.textContent = t("welcome.intro", lang);
+    const blockedHeading = document.createElement("h3");
+    blockedHeading.textContent = t("welcome.blockedIntro", lang);
+    const blockedList = document.createElement("ul");
+    for (const key of ["welcome.blockedInstagram", "welcome.blockedYoutube"]) {
+      const li = document.createElement("li");
+      li.textContent = t(key, lang);
+      blockedList.appendChild(li);
+    }
+    const tipsHeading = document.createElement("h3");
+    tipsHeading.textContent = t("welcome.tipsTitle", lang);
+    const tipsList = document.createElement("ul");
+    for (const key of [
+      "welcome.tipUninstall",
+      "welcome.tipShortcut",
+      "welcome.tipDefaultBrowser",
+      "welcome.tipTampermonkey"
+    ]) {
+      const li = document.createElement("li");
+      li.textContent = t(key, lang);
+      tipsList.appendChild(li);
+    }
+    const closeButton = document.createElement("button");
+    closeButton.type = "button";
+    closeButton.className = "smd-welcome-close";
+    closeButton.textContent = t("welcome.close", lang);
+    closeButton.addEventListener("click", () => {
+      void markWelcomeSeen();
+      backdrop.remove();
+      onClose?.();
+    });
+    sheet.append(title, intro, blockedHeading, blockedList, tipsHeading, tipsList, closeButton);
+    backdrop.appendChild(sheet);
+    host.mount(backdrop);
+  }
+
+  // src/features/time-tracker.ts
+  function startTimeTracker(options) {
+    const tickIntervalMs = options.tickIntervalMs ?? 1e3;
+    const flushEveryTicks = options.flushEveryTicks ?? 10;
+    const isVisible = options.isVisible ?? (() => document.visibilityState === "visible");
+    const pendingIg = {};
+    const pendingYt = {};
+    let ticksSinceFlush = 0;
+    const flush = async () => {
+      ticksSinceFlush = 0;
+      const igEntries = Object.entries(pendingIg);
+      const ytEntries = Object.entries(pendingYt);
+      if (igEntries.length === 0 && ytEntries.length === 0) return;
+      const date = options.now?.() ?? /* @__PURE__ */ new Date();
+      const stats = await getDayStats(date);
+      for (const [section2, count] of igEntries) {
+        stats.ig[section2] += count;
+        delete pendingIg[section2];
+      }
+      for (const [section2, count] of ytEntries) {
+        stats.yt[section2] += count;
+        delete pendingYt[section2];
+      }
+      await setDayStats(stats, date);
+    };
+    const tick = () => {
+      if (!isVisible()) return;
+      if (!options.hasRecentInteraction() && !options.isVideoPlaying()) return;
+      const current = options.getSection();
+      if (!current) return;
+      if (current.site === "instagram") {
+        pendingIg[current.section] = (pendingIg[current.section] ?? 0) + 1;
+      } else {
+        pendingYt[current.section] = (pendingYt[current.section] ?? 0) + 1;
+      }
+      ticksSinceFlush += 1;
+      if (ticksSinceFlush >= flushEveryTicks) {
+        void flush();
+      }
+    };
+    const timer = setInterval(tick, tickIntervalMs);
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") void flush();
+    };
+    const onPageHide = () => void flush();
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("pagehide", onPageHide);
+    void pruneOldDayStats(options.retentionDays ?? 35, options.now?.() ?? /* @__PURE__ */ new Date());
+    return {
+      stop() {
+        clearInterval(timer);
+        document.removeEventListener("visibilitychange", onVisibilityChange);
+        window.removeEventListener("pagehide", onPageHide);
+      },
+      flush
+    };
+  }
+
+  // src/features/update-check.ts
+  var LAST_CHECK_KEY = "smd:v1:updateCheck:lastRunAt";
+  var LATEST_VERSION_KEY = "smd:v1:updateCheck:latestVersion";
+  var CHECK_INTERVAL_MS = 24 * 60 * 60 * 1e3;
+  function defaultXhr(details) {
+    GM.xmlHttpRequest({ method: "GET", url: details.url, onload: details.onload, onerror: details.onerror });
+  }
+  function parseVersionFromMeta(metaText) {
+    const match = /@version\s+(\S+)/.exec(metaText);
+    return match ? match[1] ?? null : null;
+  }
+  function compareVersions(a, b) {
+    const partsA = a.split(".").map(Number);
+    const partsB = b.split(".").map(Number);
+    const length = Math.max(partsA.length, partsB.length);
+    for (let i = 0; i < length; i++) {
+      const diff = (partsA[i] ?? 0) - (partsB[i] ?? 0);
+      if (diff !== 0) return diff;
+    }
+    return 0;
+  }
+  function fetchLatestVersion(metaUrl, xhr) {
+    return new Promise((resolve) => {
+      xhr({
+        url: metaUrl,
+        onload: (response) => {
+          if (response.status !== 200) {
+            resolve(null);
+            return;
+          }
+          resolve(parseVersionFromMeta(response.responseText));
+        },
+        onerror: () => resolve(null)
+      });
+    });
+  }
+  async function checkForUpdate(options) {
+    const now = (options.now ?? Date.now)();
+    const lastRun = await getValue(LAST_CHECK_KEY, 0);
+    if (now - lastRun < CHECK_INTERVAL_MS) {
+      const cached = await getValue(LATEST_VERSION_KEY, null);
+      return {
+        checked: false,
+        hasUpdate: cached !== null && compareVersions(cached, options.currentVersion) > 0,
+        latestVersion: cached
+      };
+    }
+    const latestVersion = await fetchLatestVersion(options.metaUrl, options.xhr ?? defaultXhr);
+    await setValue(LAST_CHECK_KEY, now);
+    if (latestVersion !== null) {
+      await setValue(LATEST_VERSION_KEY, latestVersion);
+    }
+    return {
+      checked: true,
+      hasUpdate: latestVersion !== null && compareVersions(latestVersion, options.currentVersion) > 0,
+      latestVersion
+    };
   }
 
   // src/platforms/instagram/account.ts
@@ -235,48 +1265,6 @@
   }
   var registerFeedFilterProcessor = (getRoute) => (root) => processFeedFilter(root, getRoute());
 
-  // src/core/gm.ts
-  function hasGM() {
-    return typeof GM !== "undefined" && typeof GM.getValue === "function";
-  }
-  async function getValue(key, defaultValue) {
-    if (hasGM()) {
-      return GM.getValue(key, defaultValue);
-    }
-    const raw = localStorage.getItem(key);
-    if (raw === null) return defaultValue;
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return defaultValue;
-    }
-  }
-  async function setValue(key, value) {
-    if (hasGM()) {
-      return GM.setValue(key, value);
-    }
-    localStorage.setItem(key, JSON.stringify(value));
-  }
-
-  // src/core/storage.ts
-  function emptyDayStats() {
-    return {
-      ig: { feed: 0, dm: 0, stories: 0, profile: 0, reel: 0, search: 0, other: 0 },
-      yt: { video: 0, browse: 0 },
-      blocks: { reel_next: 0, blocked_route: 0, feed_end: 0 }
-    };
-  }
-  var DAY_KEY_PREFIX = "smd:v1:stats:";
-  function dayKey(date) {
-    return `${DAY_KEY_PREFIX}${date.toISOString().slice(0, 10)}`;
-  }
-  async function getDayStats(date = /* @__PURE__ */ new Date()) {
-    return getValue(dayKey(date), emptyDayStats());
-  }
-  async function setDayStats(stats, date = /* @__PURE__ */ new Date()) {
-    await setValue(dayKey(date), stats);
-  }
-
   // src/core/blocks.ts
   async function incrementBlock(type, date = /* @__PURE__ */ new Date()) {
     const stats = await getDayStats(date);
@@ -401,28 +1389,6 @@
       );
       observer2.observe(caughtUpCard);
     };
-  }
-
-  // src/core/i18n/en.ts
-  var en = {
-    "welcome.title": "Welcome to socialmerd",
-    "placeholder.watchReel": "Watch reel"
-  };
-
-  // src/core/i18n/it.ts
-  var it = {
-    "welcome.title": "Benvenuto su socialmerd",
-    "placeholder.watchReel": "Guarda reel"
-  };
-
-  // src/core/i18n/index.ts
-  var dictionaries = { it, en };
-  function detectLang(navigatorLanguage = navigator.language, override = "auto") {
-    if (override !== "auto") return override;
-    return navigatorLanguage.toLowerCase().startsWith("it") ? "it" : "en";
-  }
-  function t(key, lang) {
-    return dictionaries[lang][key] ?? dictionaries.en[key];
   }
 
   // src/platforms/instagram/routes.ts
@@ -837,13 +1803,14 @@
     const media = document.querySelector("video, img[srcset]");
     return media?.getAttribute("src") ?? location.href;
   }
-  function startInstagramPlatform() {
+  function startInstagramPlatform(onRoute) {
     let currentRoute = classifyInstagramRoute(location.pathname, location.search);
     const getRoute = () => currentRoute;
     const reelLock = createReelLockController();
     const routeGuard = startRouteGuard((route) => {
       currentRoute = route;
       reelLock.handleRoute(route);
+      onRoute?.(route);
     });
     const processors2 = [
       processNavCleanup,
@@ -859,6 +1826,31 @@
       routeGuard.stop();
       for (const unregister of unregisterAll) unregister();
     };
+  }
+
+  // src/platforms/instagram/section.ts
+  function sectionForRoute(route) {
+    switch (route.kind) {
+      case "feed":
+        return "feed";
+      case "direct":
+        return "dm";
+      case "stories":
+        return "stories";
+      case "profile":
+      case "post":
+        return "profile";
+      case "reel-lock":
+        return "reel";
+      case "explore":
+      case "explore-search":
+        return "search";
+      case "redirect-to-following":
+      case "blocked":
+      case "activity":
+      case "passthrough":
+        return "other";
+    }
   }
 
   // src/platforms/youtube/routes.ts
@@ -939,10 +1931,15 @@
     void incrementBlock("blocked_route");
     location.replace(watchUrlFor(route.videoId));
   }
-  function startYoutubePlatform() {
-    redirectAwayFromShorts(classifyYoutubeRoute(location.pathname));
+  function startYoutubePlatform(onRoute) {
+    const classifyAndHandle = (pathname) => {
+      const route = classifyYoutubeRoute(pathname);
+      onRoute?.(route);
+      redirectAwayFromShorts(route);
+    };
+    classifyAndHandle(location.pathname);
     const stopWatching = watchUrl((url) => {
-      redirectAwayFromShorts(classifyYoutubeRoute(new URL(url, location.origin).pathname));
+      classifyAndHandle(new URL(url, location.origin).pathname);
     });
     const unregister = registerProcessor(processShortsHider);
     return () => {
@@ -951,15 +1948,111 @@
     };
   }
 
+  // src/platforms/youtube/section.ts
+  function sectionForRoute2(route) {
+    return route.kind === "watch" ? "video" : "browse";
+  }
+
   // src/main.ts
+  var REPO = "glingus/socialmerd";
+  var INTERACTION_WINDOW_MS = 6e4;
+  var PILL_REFRESH_MS = 5e3;
+  function isFullscreenVideo() {
+    const doc = document;
+    return doc.fullscreenElement != null || doc.webkitFullscreenElement != null;
+  }
+  function metaUrlFor(channel) {
+    if (channel === "greasyfork") return null;
+    const branch = channel === "main" ? "main" : "dev";
+    return `https://raw.githubusercontent.com/${REPO}/${branch}/dist/socialmerd.meta.js`;
+  }
+  async function bootstrap(site) {
+    const settings = await getSettings();
+    let pillEnabled = settings.pillEnabled;
+    let lang = detectLang(navigator.language, settings.langOverride);
+    const host = getHost();
+    let hasRecentInteraction = false;
+    let interactionTimer = null;
+    const markInteraction = () => {
+      hasRecentInteraction = true;
+      if (interactionTimer) clearTimeout(interactionTimer);
+      interactionTimer = setTimeout(() => {
+        hasRecentInteraction = false;
+      }, INTERACTION_WINDOW_MS);
+    };
+    for (const type of ["pointerdown", "keydown", "touchstart", "scroll"]) {
+      document.addEventListener(type, markInteraction, { capture: true, passive: true });
+    }
+    function isVideoPlaying() {
+      for (const video of document.querySelectorAll("video")) {
+        if (!video.paused) return true;
+      }
+      return false;
+    }
+    let instagramRoute = null;
+    let youtubeRoute = null;
+    function getSection() {
+      if (site === "instagram" && instagramRoute) {
+        return { site: "instagram", section: sectionForRoute(instagramRoute) };
+      }
+      if (site === "youtube" && youtubeRoute) {
+        return { site: "youtube", section: sectionForRoute2(youtubeRoute) };
+      }
+      return null;
+    }
+    startTimeTracker({ hasRecentInteraction: () => hasRecentInteraction, isVideoPlaying, getSection });
+    let hasUpdate = false;
+    const debugOverlay = createDebugOverlay(host, lang);
+    const panel = createPanel(host, {
+      getLang: () => lang,
+      version: "0.1.0.13",
+      channel: "dev",
+      hasUpdate: () => hasUpdate,
+      onSettingsChanged: (next) => {
+        pillEnabled = next.pillEnabled;
+        lang = detectLang(navigator.language, next.langOverride);
+        refreshPill();
+      },
+      onDebugTap: () => debugOverlay.open()
+    });
+    const pill = createPill(host, lang, () => void panel.toggle());
+    function refreshPill() {
+      const pathname = location.pathname;
+      const hidden = !pillEnabled || shouldHidePill(
+        site === "youtube" ? { site, pathname, isFullscreenVideo: isFullscreenVideo() } : { site, pathname }
+      );
+      void getDayStats().then((stats) => {
+        const minutes = site === "instagram" ? igMinutes(stats) : ytMinutes(stats);
+        pill.update(minutes, hasUpdate, hidden);
+      });
+    }
+    setInterval(refreshPill, PILL_REFRESH_MS);
+    refreshPill();
+    if (site === "instagram") {
+      startInstagramPlatform((route) => {
+        instagramRoute = route;
+        refreshPill();
+      });
+    } else {
+      startYoutubePlatform((route) => {
+        youtubeRoute = route;
+        refreshPill();
+      });
+    }
+    const metaUrl = metaUrlFor("dev");
+    if (settings.updateCheckEnabled && metaUrl) {
+      const result = await checkForUpdate({ currentVersion: "0.1.0.13", metaUrl });
+      hasUpdate = result.hasUpdate;
+      refreshPill();
+    }
+    if (!await hasSeenWelcome()) {
+      showWelcome(host, lang);
+    }
+  }
   function main() {
     const site = detectSite();
     if (!site) return;
-    if (site === "instagram") {
-      startInstagramPlatform();
-    } else {
-      startYoutubePlatform();
-    }
+    void bootstrap(site);
   }
   main();
 })();
