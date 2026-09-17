@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         socialmerd
 // @namespace    https://github.com/glingus/socialmerd
-// @description  Instagram and YouTube without the addictive parts, in Safari on iPhone (via the Stay for Safari app).
-// @description:it  Instagram e YouTube senza le parti che creano dipendenza, in Safari su iPhone (tramite l'app Stay for Safari).
+// @description  Instagram and YouTube without the addictive parts, in the Orion browser on iPhone (via Tampermonkey).
+// @description:it  Instagram e YouTube senza le parti che creano dipendenza, nel browser Orion su iPhone (tramite Tampermonkey).
 // @version      0.1.0.7
 // @license      GPL-3.0-or-later
 // @match        https://www.instagram.com/*
