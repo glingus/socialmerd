@@ -1,4 +1,4 @@
-// Ambient types for the Userscripts (quoid) / GM.* async API.
+// Ambient types for the Stay for Safari / GM.* async API (Tampermonkey-compatible).
 // @grant GM.getValue, GM.setValue, GM.deleteValue, GM.listValues, GM.xmlHttpRequest
 
 interface GMXhrDetails {

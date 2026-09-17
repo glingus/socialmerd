@@ -1,6 +1,6 @@
 # socialmerd
 
-A free, open-source userscript that makes **Instagram web** and **YouTube** less "addictive" on **iPhone Safari**, via the free [Userscripts](https://apps.apple.com/app/userscripts/id1463298887) app (quoid).
+A free, open-source userscript that makes **Instagram web** and **YouTube** less "addictive" on **iPhone Safari**, via the free, open-source [Stay for Safari](https://apps.apple.com/app/stay-for-safari/id1591620171) extension app.
 
 - **Instagram:** no Reels tab (reels received in DMs still play, one at a time), no suggested content or Explore grid, Home feed limited to accounts you follow with a "You're all caught up" stop.
 - **YouTube:** no Shorts.
@@ -12,18 +12,20 @@ Inspired by [SocialLite](https://sociallite.app). License: GPL-3.0-or-later.
 
 ## Install (iOS 26, Safari)
 
-1. Install the free [Userscripts](https://apps.apple.com/app/userscripts/id1463298887) app from the App Store.
-2. In **Settings → Apps → Safari → Extensions**, enable Userscripts and set it to **"Always Allow"** on `instagram.com` and `youtube.com`.
-3. Open the raw install link below in Safari, tap the extension icon, then **Install**:
+1. Install the free [Stay for Safari](https://apps.apple.com/app/stay-for-safari/id1591620171) app from the App Store.
+2. In **Settings → Apps → Safari → Extensions**, enable Stay and set it to **"Always Allow"** on `instagram.com` and `youtube.com`.
+3. In Stay, import the userscript from this raw link (exact import flow — "Link" vs pasting the URL — to be confirmed and detailed here once verified on a real device):
    - Stable: `https://raw.githubusercontent.com/glingus/socialmerd/main/dist/socialmerd.user.js`
 4. If you add an icon to your Home Screen, turn **"Open as Web App" OFF**, so it still opens in Safari (extensions don't run in standalone web apps).
 5. Uninstall the official Instagram/YouTube apps if you want no other way back in.
+
+> This project originally targeted the [Userscripts](https://github.com/quoid/userscripts) app (quoid), but it wouldn't activate in Safari on iOS 26 — a known, unresolved bug in that app, not a configuration mistake (see `docs/RICERCA.md`). Stay for Safari is also free and open source (MPL) and supports the same `GM.*` API, `@match`/`@run-at document-start`/`@grant` metadata, so no script code changed — only the install steps did.
 
 Note: GitHub's raw file host caches for a few minutes, so a freshly installed update can take a little while to show up.
 
 ## Why a userscript (and not an app)
 
-A regular website can't read or modify instagram.com from the browser (CORS), Instagram sends `X-Frame-Options: DENY`, its CSP blocks bookmarklets, and there's no public feed/DM API anymore. A proxy would have to see your credentials, which is unacceptable. A userscript running client-side inside Safari, through the open-source Userscripts app, avoids all of that: no server, no expiry, no cost.
+A regular website can't read or modify instagram.com from the browser (CORS), Instagram sends `X-Frame-Options: DENY`, its CSP blocks bookmarklets, and there's no public feed/DM API anymore. A proxy would have to see your credentials, which is unacceptable. A userscript running client-side inside Safari, through an open-source Safari extension app, avoids all of that: no server, no expiry, no cost.
 
 ## Limitations
 
@@ -41,7 +43,7 @@ See [`docs/PIANO.md`](docs/PIANO.md) for the project plan and architecture, and 
 
 ## In italiano
 
-**socialmerd** è uno userscript gratuito e open source che rende **Instagram web** e **YouTube** meno "da dipendenza" su **iPhone Safari**, tramite l'app gratuita [Userscripts](https://apps.apple.com/app/userscripts/id1463298887) (quoid).
+**socialmerd** è uno userscript gratuito e open source che rende **Instagram web** e **YouTube** meno "da dipendenza" su **iPhone Safari**, tramite l'app gratuita e open source [Stay for Safari](https://apps.apple.com/app/stay-for-safari/id1591620171).
 
 - **Instagram:** niente tab Reel (i reel ricevuti in DM si guardano comunque, uno alla volta), niente contenuti suggeriti né griglia Esplora, feed Home limitato a chi segui con uno stop "Sei in pari".
 - **YouTube:** niente Shorts.

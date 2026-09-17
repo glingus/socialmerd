@@ -1,6 +1,6 @@
 // Update check (docs/PIANO.md §4.7): at most once a day, fetch the
-// channel's own .meta.js from GitHub raw and compare @version. Userscripts
-// iOS' own auto-update is currently unreliable, so this is what lights up
+// channel's own .meta.js from GitHub raw and compare @version. We don't
+// rely on the host app's own auto-update, so this is what lights up
 // the pill's dot and the install link in the panel — no other network
 // request the script makes is allowed to skip this rate limit.
 //

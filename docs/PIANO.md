@@ -4,7 +4,7 @@
 > Piano approvato dall'utente il 2026-09-17. Ricerca e fonti in [`RICERCA.md`](RICERCA.md).
 
 ## Stato avanzamento (da aggiornare a ogni fase)
-- [ ] Fase 1 — Repo e scaffold (+ userscript "hello" verificato sull'iPhone) — **in attesa della conferma dell'utente sul suo iPhone** (scaffold, build e push gia' fatti)
+- [ ] Fase 1 — Repo e scaffold (+ userscript "hello" verificato sull'iPhone) — **in attesa della conferma dell'utente sul suo iPhone**, ora con **Stay for Safari** (Userscripts/quoid abbandonata il 2026-09-17, non si attivava su iOS 26 — vedi `docs/RICERCA.md`); scaffold, build e push gia' fatti, codice invariato
 - [ ] Fase 2 — Spike sul DOM reale (`docs/spike-findings.md` completo) — **in attesa che l'utente faccia login** (`npm run e2e:login`, sempre e solo a mano sua); tooling di cattura/sanificazione pronto
 - [x] Fase 3 — Core — moduli generici (storage/migrazioni, url-watcher, dom-scheduler, i18n, log, silent-nav, blocks, host UI Shadow DOM), 51 test unitari verdi. Completata prima della Fase 2 perche' non dipende dai selettori reali di IG/YT; non ancora agganciata a `src/main.ts`
 - [ ] Fase 4 — Instagram — **bloccata**: serve `docs/spike-findings.md` completo (Fase 2) prima di scrivere selettori "verified"
@@ -16,7 +16,9 @@
 ## 0. Contesto
 L'utente vuole ricreare l'esperienza di **SocialLite** (sociallite.app): Instagram usabile per DM, storie e post di chi segui, senza reel, contenuti suggeriti e scroll infinito; più YouTube senza Shorts.
 Vincoli: **iPhone (iOS 26)**, **nessun account sviluppatore Apple**, progetto **pubblico su GitHub** (`glingus/socialmerd`) scaricabile da chiunque.
-Soluzione: un **userscript** eseguito dall'app gratuita open-source **Userscripts** (quoid, App Store) dentro **Safari**: è "Instagram web modificato lato client", senza server, senza scadenze, senza costi.
+Soluzione: un **userscript** eseguito dall'app gratuita open-source **Stay for Safari** (App Store) dentro **Safari**: è "Instagram web modificato lato client", senza server, senza scadenze, senza costi.
+
+> **Aggiornamento 2026-09-17:** il piano puntava inizialmente a **Userscripts** (quoid). Sull'iPhone dell'utente (iOS 26) l'estensione non si attivava in Safari; e' un bug noto e ricorrente di quell'app (segnalato piu' volte anche su iOS precedenti, e un issue apertissimo specifico per iOS 26 senza risposta dei maintainer — fonti in `docs/RICERCA.md`), non un errore di configurazione. L'utente ha scelto di passare a **Stay for Safari**: stessa architettura (estensione Safari, mondo isolato, API `GM.*`), stesse `@grant`/`@match`/`@run-at document-start` supportate, quindi **nessun cambio al codice**, solo alle istruzioni di installazione.
 
 Perché non una webapp/PWA (verificato): un sito non può leggere o modificare instagram.com (CORS), Instagram manda `X-Frame-Options: DENY`, la CSP con nonce blocca i bookmarklet, e l'API pubblica per feed/DM non esiste più. Un proxy farebbe passare le credenziali da un server ed è inaccettabile.
 
@@ -36,7 +38,7 @@ Perché non una webapp/PWA (verificato): un sito non può leggere o modificare i
 ## 2. Decisioni prese con l'utente
 | Tema | Decisione |
 |---|---|
-| Forma | Userscript per Userscripts iOS in Safari. Motore separato dal "delivery" per eventuali wrapper futuri |
+| Forma | Userscript per Stay for Safari su iOS (in origine Userscripts/quoid, abbandonata il 2026-09-17: estensione non attivabile su iOS 26, bug noto). Motore separato dal "delivery" per eventuali wrapper futuri |
 | Piattaforme v1 | iPhone Safari (layout **mobile**). iPad = solo con "Richiedi sito mobile" |
 | Fase 2 (dopo v1) | Layout **desktop** per PC (Chrome/Firefox + Tampermonkey) e iPad |
 | Social | Instagram + YouTube (solo Shorts) |
@@ -75,7 +77,7 @@ Perché non una webapp/PWA (verificato): un sito non può leggere o modificare i
 | `dist/socialmerd.user.js` su `dev` (versione `X.Y.Z.<build>`) | Build di sviluppo sull'iPhone dell'utente | stessi path ma sul branch `dev` | Sì |
 | `dist/socialmerd.greasyfork.user.js` | Sync Greasy Fork | nessuno (li gestisce GF) | No |
 
-- La cartella `dist/` è **committata**: il link raw deve finire in `.user.js`, altrimenti Userscripts non mostra l'installazione. Le Release GitHub fanno redirect e non vanno usate come link di installazione.
+- La cartella `dist/` è **committata**: il link raw deve finire in `.user.js`. Le Release GitHub fanno redirect e non vanno usate come link di installazione. (Da verificare con Stay for Safari: se il flusso di importazione preferisce un altro formato/estensione, vedi `docs/spike-findings.md`.)
 - La CI verifica che `dist/` sia aggiornata (`build` + `git diff --exit-code`).
 - Il raw di GitHub ha una cache di circa 5 minuti: va detto all'utente durante i test.
 
@@ -207,7 +209,7 @@ README.md (EN + sezione IT)  LICENSE (GPL-3.0)  CHANGELOG.md  CLAUDE.md
 - **Overlay di debug:** si attiva con 5 tap sulla versione nel pannello. Mostra le ultime 50 righe di log, le feature disponibili (GM, navigation API) e i contatori dei selettori trovati. Serve per il debug su iPhone senza Web Inspector.
 
 ### 4.7 Aggiornamenti e lingue
-- **`update-check.ts`** (solo varianti GitHub; l'aggiornamento automatico di Userscripts iOS è attualmente inaffidabile): **massimo 1 volta al giorno** `GM.xmlHttpRequest` sul `.meta.js` del proprio canale e confronto di `@version`. Se c'è una versione nuova: pallino sulla pillola e link di installazione nel pannello. Dichiarato nel README.
+- **`update-check.ts`** (solo varianti GitHub; non ci si affida all'auto-update dell'app che ospita l'estensione, qualunque essa sia): **massimo 1 volta al giorno** `GM.xmlHttpRequest` sul `.meta.js` del proprio canale e confronto di `@version`. Se c'è una versione nuova: pallino sulla pillola e link di installazione nel pannello. Dichiarato nel README.
 - **i18n:** lingua da `navigator.language` (`it*` → it, altrimenti en), con override nel pannello. Dizionari di riconoscimento IG/YT con IT + EN, estendibili.
 
 ## 5. Fasi di lavoro per Sonnet (in ordine, ognuna con criterio di uscita)
@@ -244,7 +246,7 @@ README.md (EN + sezione IT)  LICENSE (GPL-3.0)  CHANGELOG.md  CLAUDE.md
 5. **YouTube Shorts.** *Uscita:* test DOM + scenari live YT.
 6. **Statistiche e UI:** `time-tracker`, pillola, pannello, benvenuto, overlay di debug, `update-check`, stringhe IT/EN. *Uscita:* test con timer finti; verifica visiva su emulatore e su iPhone.
 7. **Release v1.0.0:**
-   - README EN + IT: installazione passo-passo su iOS 26 (installare Userscripts → Impostazioni › App › Safari › Estensioni › attivare e "Consenti sempre" su instagram.com e youtube.com → aprire il link raw → icona estensione → Installa); icona Home con "Apri come web app" OFF; disinstallare le app ufficiali; aggiornamento; privacy; limitazioni; segnalazione selettori rotti.
+   - README EN + IT: installazione passo-passo su iOS 26 con Stay for Safari (dettaglio esatto del flusso di import — Link/GreasyFork/file — da verificare e documentare nella Fase 1/2, vedi `docs/spike-findings.md`; resta comunque: Impostazioni › App › Safari › Estensioni › attivare e "Consenti sempre" su instagram.com e youtube.com); icona Home con "Apri come web app" OFF; disinstallare le app ufficiali; aggiornamento; privacy; limitazioni; segnalazione selettori rotti.
    - `docs/TESTING-iphone.md` eseguito dall'utente; tag `v1.0.0`, Release GitHub, merge `dev` → `main`.
    - **Greasy Fork:** istruzioni per l'utente (crea lui l'account e imposta la sincronizzazione dal raw di `socialmerd.greasyfork.user.js`; Sonnet non crea account).
 8. **Fase 2 del prodotto (non in v1):** adattatore desktop (`platforms/*/layouts/desktop`) per PC e iPad, lock dei reel nelle modali desktop, documentazione per Tampermonkey su Chrome (toggle "Allow User Scripts").
@@ -299,5 +301,5 @@ typecheck, lint, test unit+DOM, build, `dist/` aggiornata.
 Nella cartella `C:\Users\Raffa\Desktop\socialmerd\`:
 - `CLAUDE.md`: sintesi del progetto + regole §8 + "leggi `docs/PIANO.md` prima di tutto; inizia dalla Fase 1". Viene caricato automaticamente da Sonnet dopo il `/clear`.
 - `docs/PIANO.md`: questo piano completo.
-- `docs/RICERCA.md`: ricerca con fonti (SocialLite: funzioni, limiti e recensioni; FocusGram, NoReel e FeurStagram; CSP e header di IG; Userscripts iOS; Safari/iOS 26; Greasy Fork; approccio SideStore scartato).
+- `docs/RICERCA.md`: ricerca con fonti (SocialLite: funzioni, limiti e recensioni; FocusGram, NoReel e FeurStagram; CSP e header di IG; Userscripts iOS -> abbandonata, Stay for Safari; Safari/iOS 26; Greasy Fork; approccio SideStore scartato).
 - Memoria persistente: preferenza di lavoro dell'utente (Opus pianifica e fa domande, Sonnet scrive il codice) e puntatore al progetto.

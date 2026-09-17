@@ -1,6 +1,6 @@
 # socialmerd
 
-Userscript open source (GPL-3.0-or-later) che rende **Instagram web** e **YouTube** "senza dipendenza" su **iPhone Safari**, tramite l'app gratuita **Userscripts** (quoid).
+Userscript open source (GPL-3.0-or-later) che rende **Instagram web** e **YouTube** "senza dipendenza" su **iPhone Safari**, tramite l'app gratuita e open source **Stay for Safari** (in origine si puntava a **Userscripts**/quoid, abbandonata il 2026-09-17: estensione che non si attivava su iOS 26 dell'utente, bug noto e non risolto dai maintainer — vedi `docs/RICERCA.md`).
 - **Instagram:** niente reel (quelli ricevuti in DM si guardano uno alla volta), niente contenuti suggeriti né Esplora, feed solo seguiti con stop "Sei in pari".
 - **YouTube:** niente Shorts.
 - **Extra:** contatore tempo e statistiche.

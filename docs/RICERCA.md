@@ -130,7 +130,8 @@ Fonti: [How-To Geek: variant=following](https://www.howtogeek.com/instagram-for-
 | Webapp con **proxy** server | ❌ | Credenziali e sessioni passano dal server; IG blocca/verifica gli IP da datacenter; websocket DM e media fragili |
 | Bookmarklet | ❌ | La CSP con nonce lo blocca su Safari |
 | Estensione Safari propria | ❌ | Per pubblicarla serve l'Apple Developer Program (99 $/anno) |
-| **App "Userscripts" (quoid) + nostro userscript** | ✅ scelta | Gratis, open source, estensione Safari già pubblicata che esegue script da URL |
+| App "Userscripts" (quoid) + nostro userscript | ⚠️ scelta poi abbandonata (2026-09-17) | Estensione non attivabile su iOS 26 dell'utente, bug noto non risolto — vedi §4.1 |
+| **App "Stay for Safari" + nostro userscript** | ✅ scelta attuale | Gratis, open source (MPL), stesse API GM.*/metadati di Userscripts — vedi §4.1 |
 | App iOS WebView con SideStore/AltStore (Apple ID gratuito) | ⚠️ scartata | Scade ogni 7 giorni, massimo 3 app, circa 10 App ID a settimana, setup complesso; si può compilare un IPA non firmato con GitHub Actions (runner macOS), ma lo sviluppo da Windows è lento |
 | Comandi Rapidi "quando si apre Instagram → apri Safari" | Scartata dall'utente | Utile per tenere l'app solo per le notifiche; l'utente preferisce disinstallare le app. Nota: con i limiti di Tempo di utilizzo iOS le notifiche si fermano |
 
@@ -148,6 +149,25 @@ Fonti: [How-To Geek: variant=following](https://www.howtogeek.com/instagram-for-
 - I **Profili Safari** (iOS 17+) hanno cookie separati e le estensioni si attivano per profilo (alternativa multi-account non scelta).
 
 Fonti: [Userscripts su App Store](https://apps.apple.com/us/app/userscripts/id1463298887) · [quoid/userscripts README](https://github.com/quoid/userscripts/blob/main/README.md) · [Releases](https://github.com/quoid/userscripts/releases) · [Issue #960](https://github.com/quoid/userscripts/issues/960) · [Apple Dev Forums: estensioni in standalone](https://developer.apple.com/forums/thread/715634) · [Apple Dev Forums: web extensions e Home Screen](https://developer.apple.com/forums/thread/725178) · [iDB: iOS 26 web app dalla Home](https://www.idownloadblog.com/2025/06/17/apple-ios-26-safari-web-apps-home-screen-bookmarks/) · [MacRumors: iOS 26 web app o segnalibro](https://www.macrumors.com/how-to/save-safari-bookmark-web-app-iphone-home-screen/) · [MacRumors: Profili Safari](https://www.macrumors.com/how-to/separate-iphone-browsing-habits-safari-profiles/) · [builds.io: SideStore 2026](https://builds.io/blog/technologies/ios-technologies/sidestore-live-container-guide-2026-free-sideloading/) · [SideStore FAQ](https://docs.sidestore.io/docs/faq) · [Bookmarklet e CSP](https://socradar.io/csp-bypass-unveiled-the-hidden-threat-of-bookmarklets/) · [Apple Community: limiti app e notifiche](https://discussions.apple.com/thread/254986942) · [Apple: automazioni Comandi Rapidi](https://support.apple.com/guide/shortcuts/intro-to-personal-automation-apd690170742/ios)
+
+### 4.1 Aggiornamento 2026-09-17: Userscripts abbandonata, si passa a Stay for Safari
+
+Sul dispositivo dell'utente (iPhone, iOS 26) l'estensione Userscripts non si attivava in Impostazioni → Safari → Estensioni (nessuna Content & Privacy Restriction attiva). Contattato il supporto Apple: nessuna soluzione (previsibile, e' un problema lato app di terze parti, non di sistema).
+
+**Verifica fatta prima di decidere:**
+- Il sintomo ("estensione che non appare/non si attiva") e' un bug ricorrente e documentato di questa app, gia' capitato su iOS precedenti dopo aggiornamenti (es. [issue #193](https://github.com/quoid/userscripts/issues/193): "UserScripts 4.0.9 upgrade caused the extension to disappear from Safari"), oltre a bug simili di registrazione delle estensioni Safari riportati da altri sviluppatori su piu' versioni di iOS (17.4, 18.3) nei forum Apple.
+- Esiste un issue apertissimo specifico per iOS 26 ([issue #960](https://github.com/quoid/userscripts/issues/960), 4 settembre 2026): script che non partono su iPadOS 26.5.2 nonostante l'estensione sembri attiva — gia' segnalato come "da tenere d'occhio" nella ricerca originale (§4 sopra). Nessuna risposta dei maintainer al momento, nessuna causa confermata.
+- L'ultima release stabile e' di gennaio 2026, l'ultima beta di maggio 2026 — **prima** del rilascio di iOS 26: l'app potrebbe semplicemente non aver ancora recuperato compatibilita' con qualcosa che Apple ha cambiato in Safari.
+
+**Alternativa scelta: Stay for Safari** ([shenruisi/Stay](https://github.com/shenruisi/Stay), App Store: [Stay for Safari](https://apps.apple.com/us/app/stay-for-safari/id1591620171)):
+- Open source, licenza **MPL** (Mozilla Public License).
+- Gratis con IAP opzionale ($4.99 one-time) per funzioni che non usiamo (sync self-hosted, adblock custom, download manager); l'esecuzione di userscript e' nel livello gratuito.
+- **API GM implementate:** `GM_setValue`/`GM.setValue`, `GM_getValue`/`GM.getValue`, `GM_deleteValue`/`GM.deleteValue`, `GM_listValues`/`GM.listValues`, `GM_xmlhttpRequest`/`GM.xmlHttpRequest`, `GM_addStyle`, `GM_registerMenuCommand`, `GM_info`/`GM.info`, `unsafeWindow`. Non implementate (concesse ma inerti): `GM_notification`, `window.onurlchange` — non ci servono.
+- **Metadati supportati:** `@name` (localizzato), `@namespace`, `@version`, `@description` (localizzato), `@homepage`, `@updateURL`, `@downloadURL`, `@supportURL`, `@include`/`@match`/`@exclude`, `@require`, `@resource`, `@run-at`, `@grant`, `@noframes`. Tutti i tag che usiamo gia' sono coperti; nessun cambio al codice, solo alle istruzioni di installazione (README).
+- **Metodi di importazione:** "Write script | Link | GreasyFork | Local file" — presumibilmente "Link" per il nostro URL raw `.user.js`; il flusso esatto va confermato e documentato nella Fase 1/2 (vedi `docs/spike-findings.md`).
+- Non e' emerso nulla sulla stabilita' del suo auto-update da `@updateURL`/`@downloadURL`: teniamo comunque il nostro `update-check.ts` giornaliero in-script, indipendente dall'app ospite.
+
+Fonti: [quoid/userscripts issue #193](https://github.com/quoid/userscripts/issues/193) · [quoid/userscripts issue #960](https://github.com/quoid/userscripts/issues/960) · [quoid/userscripts releases](https://github.com/quoid/userscripts/releases) · [Apple Dev Forums: estensione che appare/scompare su iPad, iOS 18.3](https://developer.apple.com/forums/thread/775772) · [Apple Dev Forums: estensioni Safari rotte su iOS 17.4](https://developer.apple.com/forums/thread/750458) · [shenruisi/Stay README](https://github.com/shenruisi/Stay/blob/main/README-EN.md) · [Stay for Safari su App Store](https://apps.apple.com/us/app/stay-for-safari/id1591620171)
 
 ---
 
