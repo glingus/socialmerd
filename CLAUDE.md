@@ -1,6 +1,8 @@
 # socialmerd
 
-Userscript open source (GPL-3.0-or-later) che rende **Instagram web** e **YouTube** "senza dipendenza" su **iPhone Safari**, tramite l'app gratuita **Userscripts** (quoid).
+Userscript open source (GPL-3.0-or-later) che rende **Instagram web** e **YouTube** "senza dipendenza" su **iPhone**, dentro il browser gratuito **Orion (Kagi)** con l'estensione **Tampermonkey**.
+
+> ⚠️ **Architettura cambiata il 2026-09-17, sera.** Il progetto puntava a **Safari** + un'app di userscript (prima Userscripts/quoid, poi Stay for Safari). Sull'iPhone dell'utente **nessuna estensione Safari si attiva**: provate tre app diverse, inclusa **Grammarly** (mainstream, sicuramente compatibile) — è rotto il sottosistema estensioni di *quel dispositivo*, non le app. **Safari è fuori dal piano.** Il pivot è verificato sul telefono dell'utente: script installato e funzionante su Orion + Tampermonkey. Dettagli e fonti in `docs/RICERCA.md` §4.1-4.2.
 - **Instagram:** niente reel (quelli ricevuti in DM si guardano uno alla volta), niente contenuti suggeriti né Esplora, feed solo seguiti con stop "Sei in pari".
 - **YouTube:** niente Shorts.
 - **Extra:** contatore tempo e statistiche.
@@ -25,11 +27,12 @@ Ispirato a SocialLite. Repo: `github.com/glingus/socialmerd` (pubblico; branch `
   - **stop immediato** su checkpoint/challenge/login, avvisando l'utente
   - mai in CI
 - Selettori e stringhe riconosciute **solo** in `src/platforms/*/selectors.ts` e `strings.ts`, con commento `// verified YYYY-MM-DD`. **Mai** classi CSS offuscate. Preferisci URL/rotte → href/ARIA/struttura → testo.
-- Lo script gira nel **content world** (`@inject-into content`, `@run-at document-start`): non puoi agganciare `fetch` o `history` della pagina. Usa polling dell'URL, listener in cattura e un solo MutationObserver.
+- Lo script gira nel **content world** (sandbox di Tampermonkey, `@run-at document-start`): **dai per scontato** che non puoi agganciare `fetch` o `history` della pagina. Usa polling dell'URL, listener in cattura e un solo MutationObserver. Il mondo pagina è solo un'**ottimizzazione opzionale** da verificare nello spike punto (q): se funziona è un bonus per una fase futura, **mai una dipendenza**.
+- Il bersaglio è **Orion su iPhone**, non Safari. Non scrivere istruzioni, README o testi UI che parlino di estensioni Safari, "Aggiungi alla schermata Home" o "Apri come web app": su Orion non esistono. L'utente apre Instagram con un **Comando Rapido** (§4.6 del piano).
 - **Nessuna richiesta di rete** dello script, tranne `update-check` (massimo 1 al giorno, solo varianti GitHub). Nessuna telemetria.
 - Build **non minificata** (regola di Greasy Fork). `dist/` va committata (i link raw devono finire in `.user.js`).
 - FocusGram (AGPL) e FeurStagram (GPL) sono solo riferimenti di tecnica: **non copiare il loro codice**.
-- L'iPhone dell'utente ha **iOS 26**. Le prove reali su Safari le fa l'utente, seguendo `docs/TESTING-iphone.md`.
+- L'iPhone dell'utente ha **iOS 26**. Le prove reali le fa l'utente **in Orion**, seguendo `docs/TESTING-iphone.md` (da creare nella Fase 7).
 
 ## Ambiente (Windows 11)
 - **Disponibili:** Node 24, npm, Git, VS Code, Chrome ed Edge; gh CLI loggato come `glingus`.

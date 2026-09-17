@@ -130,7 +130,9 @@ Fonti: [How-To Geek: variant=following](https://www.howtogeek.com/instagram-for-
 | Webapp con **proxy** server | ❌ | Credenziali e sessioni passano dal server; IG blocca/verifica gli IP da datacenter; websocket DM e media fragili |
 | Bookmarklet | ❌ | La CSP con nonce lo blocca su Safari |
 | Estensione Safari propria | ❌ | Per pubblicarla serve l'Apple Developer Program (99 $/anno) |
-| **App "Userscripts" (quoid) + nostro userscript** | ✅ scelta | Gratis, open source, estensione Safari già pubblicata che esegue script da URL |
+| App "Userscripts" (quoid) + nostro userscript | ❌ abbandonata (2026-09-17, mattina) | Estensione non attivabile su iOS 26 dell'utente — vedi §4.1 |
+| App "Stay for Safari" + nostro userscript | ❌ abbandonata (2026-09-17, sera) | Non si attiva neanche lei. **Nessuna** estensione Safari parte su quel dispositivo — vedi §4.2 |
+| **Browser Orion (Kagi) + Tampermonkey** | ✅ **scelta attuale, verificata sull'iPhone dell'utente** | Gratis; implementa le WebExtensions per conto proprio sopra WKWebView, quindi **non passa dal sottosistema estensioni di Safari** che su quel telefono è rotto — vedi §4.2 |
 | App iOS WebView con SideStore/AltStore (Apple ID gratuito) | ⚠️ scartata | Scade ogni 7 giorni, massimo 3 app, circa 10 App ID a settimana, setup complesso; si può compilare un IPA non firmato con GitHub Actions (runner macOS), ma lo sviluppo da Windows è lento |
 | Comandi Rapidi "quando si apre Instagram → apri Safari" | Scartata dall'utente | Utile per tenere l'app solo per le notifiche; l'utente preferisce disinstallare le app. Nota: con i limiti di Tempo di utilizzo iOS le notifiche si fermano |
 
@@ -148,6 +150,66 @@ Fonti: [How-To Geek: variant=following](https://www.howtogeek.com/instagram-for-
 - I **Profili Safari** (iOS 17+) hanno cookie separati e le estensioni si attivano per profilo (alternativa multi-account non scelta).
 
 Fonti: [Userscripts su App Store](https://apps.apple.com/us/app/userscripts/id1463298887) · [quoid/userscripts README](https://github.com/quoid/userscripts/blob/main/README.md) · [Releases](https://github.com/quoid/userscripts/releases) · [Issue #960](https://github.com/quoid/userscripts/issues/960) · [Apple Dev Forums: estensioni in standalone](https://developer.apple.com/forums/thread/715634) · [Apple Dev Forums: web extensions e Home Screen](https://developer.apple.com/forums/thread/725178) · [iDB: iOS 26 web app dalla Home](https://www.idownloadblog.com/2025/06/17/apple-ios-26-safari-web-apps-home-screen-bookmarks/) · [MacRumors: iOS 26 web app o segnalibro](https://www.macrumors.com/how-to/save-safari-bookmark-web-app-iphone-home-screen/) · [MacRumors: Profili Safari](https://www.macrumors.com/how-to/separate-iphone-browsing-habits-safari-profiles/) · [builds.io: SideStore 2026](https://builds.io/blog/technologies/ios-technologies/sidestore-live-container-guide-2026-free-sideloading/) · [SideStore FAQ](https://docs.sidestore.io/docs/faq) · [Bookmarklet e CSP](https://socradar.io/csp-bypass-unveiled-the-hidden-threat-of-bookmarklets/) · [Apple Community: limiti app e notifiche](https://discussions.apple.com/thread/254986942) · [Apple: automazioni Comandi Rapidi](https://support.apple.com/guide/shortcuts/intro-to-personal-automation-apd690170742/ios)
+
+### 4.1 Aggiornamento 2026-09-17: Userscripts abbandonata, si passa a Stay for Safari
+
+Sul dispositivo dell'utente (iPhone, iOS 26) l'estensione Userscripts non si attivava in Impostazioni → Safari → Estensioni (nessuna Content & Privacy Restriction attiva). Contattato il supporto Apple: nessuna soluzione (previsibile, e' un problema lato app di terze parti, non di sistema).
+
+**Verifica fatta prima di decidere:**
+- Il sintomo ("estensione che non appare/non si attiva") e' un bug ricorrente e documentato di questa app, gia' capitato su iOS precedenti dopo aggiornamenti (es. [issue #193](https://github.com/quoid/userscripts/issues/193): "UserScripts 4.0.9 upgrade caused the extension to disappear from Safari"), oltre a bug simili di registrazione delle estensioni Safari riportati da altri sviluppatori su piu' versioni di iOS (17.4, 18.3) nei forum Apple.
+- Esiste un issue apertissimo specifico per iOS 26 ([issue #960](https://github.com/quoid/userscripts/issues/960), 4 settembre 2026): script che non partono su iPadOS 26.5.2 nonostante l'estensione sembri attiva — gia' segnalato come "da tenere d'occhio" nella ricerca originale (§4 sopra). Nessuna risposta dei maintainer al momento, nessuna causa confermata.
+- L'ultima release stabile e' di gennaio 2026, l'ultima beta di maggio 2026 — **prima** del rilascio di iOS 26: l'app potrebbe semplicemente non aver ancora recuperato compatibilita' con qualcosa che Apple ha cambiato in Safari.
+
+**Alternativa scelta: Stay for Safari** ([shenruisi/Stay](https://github.com/shenruisi/Stay), App Store: [Stay for Safari](https://apps.apple.com/us/app/stay-for-safari/id1591620171)):
+- Open source, licenza **MPL** (Mozilla Public License).
+- Gratis con IAP opzionale ($4.99 one-time) per funzioni che non usiamo (sync self-hosted, adblock custom, download manager); l'esecuzione di userscript e' nel livello gratuito.
+- **API GM implementate:** `GM_setValue`/`GM.setValue`, `GM_getValue`/`GM.getValue`, `GM_deleteValue`/`GM.deleteValue`, `GM_listValues`/`GM.listValues`, `GM_xmlhttpRequest`/`GM.xmlHttpRequest`, `GM_addStyle`, `GM_registerMenuCommand`, `GM_info`/`GM.info`, `unsafeWindow`. Non implementate (concesse ma inerti): `GM_notification`, `window.onurlchange` — non ci servono.
+- **Metadati supportati:** `@name` (localizzato), `@namespace`, `@version`, `@description` (localizzato), `@homepage`, `@updateURL`, `@downloadURL`, `@supportURL`, `@include`/`@match`/`@exclude`, `@require`, `@resource`, `@run-at`, `@grant`, `@noframes`. Tutti i tag che usiamo gia' sono coperti; nessun cambio al codice, solo alle istruzioni di installazione (README).
+- **Metodi di importazione:** "Write script | Link | GreasyFork | Local file" — presumibilmente "Link" per il nostro URL raw `.user.js`; il flusso esatto va confermato e documentato nella Fase 1/2 (vedi `docs/spike-findings.md`).
+- Non e' emerso nulla sulla stabilita' del suo auto-update da `@updateURL`/`@downloadURL`: teniamo comunque il nostro `update-check.ts` giornaliero in-script, indipendente dall'app ospite.
+
+Fonti: [quoid/userscripts issue #193](https://github.com/quoid/userscripts/issues/193) · [quoid/userscripts issue #960](https://github.com/quoid/userscripts/issues/960) · [quoid/userscripts releases](https://github.com/quoid/userscripts/releases) · [Apple Dev Forums: estensione che appare/scompare su iPad, iOS 18.3](https://developer.apple.com/forums/thread/775772) · [Apple Dev Forums: estensioni Safari rotte su iOS 17.4](https://developer.apple.com/forums/thread/750458) · [shenruisi/Stay README](https://github.com/shenruisi/Stay/blob/main/README-EN.md) · [Stay for Safari su App Store](https://apps.apple.com/us/app/stay-for-safari/id1591620171)
+
+---
+
+### 4.2 Aggiornamento 2026-09-17 (sera): Safari è fuori, si passa a Orion + Tampermonkey
+
+**La diagnosi finale, chiusa.** Dopo Userscripts (§4.1) l'utente ha installato **Stay for Safari**: non si attiva neanche lei. Poi, per capire se il problema fosse delle app di userscript o del telefono, ha installato **Grammarly** — estensione Safari mainstream, mantenuta, sicuramente compatibile con iOS 26. **Non si attiva nemmeno quella.** Già escluse: Content & Privacy Restrictions di Tempo di utilizzo (nessuna attiva) e un profilo VPN dell'allarme di casa (rimosso, nessun cambiamento). Supporto Apple contattato, nessuna soluzione.
+→ **Non è un bug di un'app: su quel dispositivo il sottosistema estensioni di Safari non funziona.** Safari esce dal piano. Non rifare questo giro di diagnosi.
+
+**Perché Orion risolve davvero.** Orion (Kagi) è l'unico browser iOS che esegue estensioni **Chrome e Firefox**, e la cosa importante è *come*: implementa le WebExtensions **per conto proprio sopra WKWebView**, senza passare dal meccanismo delle estensioni Safari (`com.apple.Safari.web-extension`) — cioè esattamente il pezzo rotto. Sono due binari indipendenti. Gratis sull'App Store, le estensioni non sono dietro il paywall Orion+, aggiornato di continuo (1.5.3 del 2026-09-14). **Tampermonkey è nella loro galleria curata** di estensioni testate su mobile. Orion è WebKit, quindi Instagram e YouTube si comportano **identici a Safari**: CSP, layout mobile e selettori restano quelli studiati finora.
+
+**Verificato sull'iPhone dell'utente (iOS 26), la sera del 2026-09-17:** Tampermonkey installato in Orion; `dist/socialmerd.user.js` dal link raw di `dev` riconosciuto e installato (schermata "Installing script" con `@grant`, `@match`, `@connect` corretti); badge "hello" visibile su `instagram.com` **e** `m.youtube.com`; contatore `visite` salito fino a 7 tra ricaricamenti → **GM storage persiste**; comparsa immediata → **`@run-at document-start` rispettato**. Nessuna modifica al codice.
+
+**Panorama verificato, per non rifare la ricerca:**
+- **Orion (Kagi)** — l'unica vera opzione su iOS oggi. Supporto estensioni dichiarato *beta*. Closed source, fornitore unico: **punto singolo di fallimento, dichiararlo**.
+- **Quetta** — supporta le estensioni **solo su Android**, non su iOS. **Il wiki StylusThemes "Browser-Compatibility" sbaglia** su questo punto, non fidarsi.
+- **Lemur**, **Mises** — di fatto progetti Android; nessuna conferma di estensioni su iOS.
+- **Motori alternativi in UE (BrowserEngineKit)** — Blink/Gecko su iOS **non sono mai stati rilasciati**: solo prototipi (Google, Mozilla, Microsoft). A gennaio 2026 Open Web Advocacy confermava che nessun vendor aveva spedito un motore concorrente. Strada chiusa.
+- **App "Tampermonkey" sull'App Store** — è di nuovo un'estensione Safari: sul dispositivo dell'utente è inutile.
+
+**Gestori userscript per Orion iOS.** Kagi documenta **Tampermonkey, ScriptCat, OrangeMonkey**. Segnalazioni della community: le versioni recenti di Tampermonkey a volte restano bloccate in caricamento su Orion iOS, mentre Violentmonkey gira e **salva** i dati degli script. Sul telefono dell'utente **Tampermonkey funziona e salva**: resta quello ufficiale. Ordine dei fallback e link verificati il 2026-09-17 (HTTP 200): Violentmonkey `addons.mozilla.org/it/firefox/addon/violentmonkey/`, ScriptCat `…/scriptcat/`, Tampermonkey `…/tampermonkey/`. **OrangeMonkey non è su Firefox Add-ons** (404): solo Chrome Web Store.
+
+**Scoglio pratico da mettere nel README.** Il **Chrome Web Store da iPhone risponde "disponibile solo da computer"**. Tre vie d'uscita, in ordine: (1) il pulsante **+** dentro Orion (••• → Extensions → +), che installa estensioni Firefox, Chrome o da file; (2) **Firefox Add-ons**, che da mobile funziona; (3) la **modalità desktop** di Orion, e poi il link diretto alla scheda dell'estensione.
+
+**Icona sulla schermata Home: non si può più.** È una funzione riservata a Safari. Dal 2024 la DMA ha obbligato Apple ad aprirla (iOS 18.2) ai browser di terze parti, ma **solo a quelli con motore proprio**: Orion usa WebKit, quindi non rientra. Soluzione adottata: **Comando Rapido con icona sulla Home** + Orion come browser predefinito — dettagli in `PIANO.md` §4.8. Lo schema `orion://open-url?url=…` è documentato dalla community per iOS (azione Drafts pubblicata), ma nella issue ufficiale di Kagi il tema risulta "Planned" e riferito a macOS: **va provato sul telefono** (spike punto (r)).
+
+**Scala di fallback, se un giorno Orion cade** (in ordine, non saltare gradini):
+1. Un altro gestore userscript dentro Orion (Violentmonkey → ScriptCat → OrangeMonkey).
+2. Le diagnosi Safari mai provate (sotto): se Safari tornasse, si avrebbero **due** strade invece di una.
+3. **Content blocker** con filtro custom da URL (AdGuard per iOS, gratis, accetta filtri custom via URL; limite Apple di 50.000 regole per content blocker). Prodotto **molto ridotto**: solo nascondere elementi e bloccare URL, **niente JavaScript** → niente ritorno silenzioso, niente segnaposto reel, niente "Sei in pari", niente statistiche. Su YouTube funzionerebbe discretamente (i nomi dei custom element `ytm-*` sono stabili), su Instagram male (classi offuscate). **Prima** va verificato se i content blocker funzionano su quel telefono: sono un punto di estensione **diverso** dalle web extension, quindi potrebbero girare anche se le estensioni no. Test: installare AdGuard (gratis) e vedere se blocca davvero la pubblicità.
+4. App WKWebView propria, sideloaded con AltStore/SideStore (scartata in §4: scadenza 7 giorni, max 3 app; attenuabile con AltServer sul PC Windows che rinnova da solo sulla stessa rete). Ultima spiaggia.
+5. Nucleare: backup, poi Inizializza contenuto e impostazioni, e configurare come nuovo. Disruptivo, decide l'utente.
+
+**Diagnosi Safari mai provate** (3 minuti, non distruttive tranne l'ultima — servono solo ad avere una seconda strada, non a sbloccare il progetto, che è già sbloccato):
+- **Modalità isolamento** (Impostazioni › Privacy e sicurezza): se accesa spiegherebbe tutto — blocco di sistema, uguale per ogni estensione. Ci sono segnalazioni di estensioni (1Password) che smettono di funzionare così.
+- **Safari › Avanzate › Funzionalità sperimentali › Ripristina tutto ai valori predefiniti**: un flag WebKit sbagliato può spegnere il sottosistema.
+- Permessi per sito: Impostazioni › App › Safari › Estensioni › [estensione] › **Altri siti web → Consenti**.
+- **Profili Safari**: le estensioni si attivano **per profilo**; se ne esiste più di uno, va abilitata in quello in uso.
+- Cancella dati dei siti → Ripristina impostazioni di rete → **Ripristina tutte le impostazioni** (non cancella foto, app e dati).
+- Verificare di essere sull'ultimo iOS 26.x e **non** su una beta.
+
+Fonti: [Orion iOS/iPadOS Web Extension Support (Kagi)](https://help.kagi.com/orion/browser-extensions/ios-ipados-extensions.html) · [Orion — galleria estensioni](https://orionbrowser.com/extensions) · [Orion per iOS](https://orionbrowser.com/platforms/ios) · [Orion iOS release notes](https://orionbrowser.com/updates/orion-iOS-release-notes) · [Orion su App Store](https://apps.apple.com/us/app/orion-browser-by-kagi/id1484498200) · [Orion — issue sullo schema `orion://`](https://orionfeedback.org/d/1415-orion-url-scheme) · [Azione Drafts "Open URL (Orion Browser)"](https://actions.getdrafts.com/a/2Op) · [StylusThemes — Browser Compatibility (da correggere su Quetta/Lemur)](https://github.com/StylusThemes/Userscripts/blob/main/wiki/Browser-Compatibility.md) · [Tampermonkey — documentazione `@sandbox`/`unsafeWindow`](https://www.tampermonkey.net/documentation.php?locale=en&q=sandbox) · [Greasespot — unsafeWindow](https://wiki.greasespot.net/UnsafeWindow) · [MacRumors: iOS 18.2, web app della Home per browser di terze parti in UE](https://www.macrumors.com/2024/10/24/ios-18-2-eu-third-party-browser-web-apps/) · [Open Web Advocacy: nessun motore alternativo rilasciato](https://open-web-advocacy.org/blog/apples-browser-engine-ban-persists-even-under-the-dma/) · [AdGuard per iOS — protezione Safari e filtri custom](https://adguard.com/kb/adguard-for-ios/features/safari-protection/) · [1Password community — estensioni Safari e Modalità isolamento](https://1password.community/discussion/136064/is-the-safari-extension-supported-in-lockdown-mode-on-ios-it-doesnt-seem-to-work-for-me) · [Apple — Modalità isolamento](https://support.apple.com/en-us/105120)
 
 ---
 
