@@ -45,8 +45,12 @@ async function loadMetaModule() {
 }
 
 function buildNumber() {
+  // Counts commits touching source paths only, not dist/. A "build dist"
+  // commit (this script's own output) must not change this number, or the
+  // committed version would never match a rebuild of that same commit
+  // (CI's `git diff --exit-code -- dist/` would fail forever).
   try {
-    return execSync('git rev-list --count HEAD', {
+    return execSync('git rev-list --count HEAD -- src scripts package.json', {
       cwd: root,
       stdio: ['ignore', 'pipe', 'ignore'],
     })
