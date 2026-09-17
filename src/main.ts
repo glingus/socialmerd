@@ -1,12 +1,11 @@
-// Fase 1 scaffold entry point: a "hello" debug badge used to verify, on the
-// user's iPhone, that (a) the badge shows up on instagram.com and
-// m.youtube.com, (b) GM.* storage persists across reloads, and (c) the
-// document-start CSS applies before first paint (no flash of unstyled UI).
-// This gets replaced by the real core/platform wiring in later phases.
+// Fase 1's "hello" debug badge (verified working on the user's iPhone, see
+// docs/PIANO.md) still runs on YouTube, which doesn't have real feature
+// wiring yet (Fase 5). Instagram now runs the real platform (Fase 4).
 
 import { detectSite } from './core/env';
 import { getValue, setValue } from './core/gm';
 import { injectStyle } from './core/styles';
+import { startInstagramPlatform } from './platforms/instagram';
 
 const BADGE_ID = 'smd-hello-badge';
 const STYLE_ID = 'smd-hello-style';
@@ -46,9 +45,14 @@ async function main(): Promise<void> {
   const site = detectSite();
   if (!site) return;
 
+  if (site === 'instagram') {
+    startInstagramPlatform();
+    return;
+  }
+
+  // YouTube: still the Fase 1 scaffold badge until Fase 5 lands.
   const count = (await getValue(COUNT_KEY, 0)) + 1;
   await setValue(COUNT_KEY, count);
-
   renderBadge(site, count);
 }
 

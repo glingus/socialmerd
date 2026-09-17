@@ -3,4 +3,5 @@
 // text Instagram/YouTube render).
 export const en = {
   'welcome.title': 'Welcome to socialmerd',
+  'placeholder.watchReel': 'Watch reel',
 } as const;
