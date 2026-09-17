@@ -65,7 +65,7 @@ function resolveVersion(ch) {
   return ch === 'dev' ? `${pkg.version}.${buildNumber()}` : pkg.version;
 }
 
-async function bundleCode() {
+async function bundleCode(version) {
   const result = await esbuild.build({
     entryPoints: [path.join(root, 'src/main.ts')],
     bundle: true,
@@ -74,7 +74,10 @@ async function bundleCode() {
     target: 'safari16',
     minify: false,
     legalComments: 'none',
-    define: { __SMD_CHANNEL__: JSON.stringify(channel) },
+    define: {
+      __SMD_CHANNEL__: JSON.stringify(channel),
+      __SMD_VERSION__: JSON.stringify(version),
+    },
   });
   return result.outputFiles[0].text;
 }
@@ -92,7 +95,7 @@ async function writeVariant(metaModule, ch, code, fileBase) {
 
 async function buildOnce() {
   const metaModule = await loadMetaModule();
-  const code = await bundleCode();
+  const code = await bundleCode(resolveVersion(channel));
   await writeVariant(metaModule, channel, code, 'socialmerd');
   if (channel === 'main') {
     await writeVariant(metaModule, 'greasyfork', code, 'socialmerd.greasyfork');
@@ -108,7 +111,10 @@ async function watchLoop() {
     target: 'safari16',
     minify: false,
     legalComments: 'none',
-    define: { __SMD_CHANNEL__: JSON.stringify(channel) },
+    define: {
+      __SMD_CHANNEL__: JSON.stringify(channel),
+      __SMD_VERSION__: JSON.stringify(resolveVersion(channel)),
+    },
     plugins: [
       {
         name: 'write-userscript',
