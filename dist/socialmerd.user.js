@@ -1966,7 +1966,30 @@
     const branch = channel === "main" ? "main" : "dev";
     return `https://raw.githubusercontent.com/${REPO}/${branch}/dist/socialmerd.meta.js`;
   }
-  async function bootstrap(site) {
+  function startPlatform(site) {
+    let instagramRoute = null;
+    let youtubeRoute = null;
+    let onRouteChanged = null;
+    if (site === "instagram") {
+      startInstagramPlatform((route) => {
+        instagramRoute = route;
+        onRouteChanged?.();
+      });
+    } else {
+      startYoutubePlatform((route) => {
+        youtubeRoute = route;
+        onRouteChanged?.();
+      });
+    }
+    return {
+      getInstagramRoute: () => instagramRoute,
+      getYoutubeRoute: () => youtubeRoute,
+      setOnRouteChanged: (fn) => {
+        onRouteChanged = fn;
+      }
+    };
+  }
+  async function bootstrapUi(site, routes) {
     const settings = await getSettings();
     let pillEnabled = settings.pillEnabled;
     let lang = detectLang(navigator.language, settings.langOverride);
@@ -1989,16 +2012,13 @@
       }
       return false;
     }
-    let instagramRoute = null;
-    let youtubeRoute = null;
     function getSection() {
-      if (site === "instagram" && instagramRoute) {
-        return { site: "instagram", section: sectionForRoute(instagramRoute) };
+      if (site === "instagram") {
+        const route2 = routes.getInstagramRoute();
+        return route2 ? { site: "instagram", section: sectionForRoute(route2) } : null;
       }
-      if (site === "youtube" && youtubeRoute) {
-        return { site: "youtube", section: sectionForRoute2(youtubeRoute) };
-      }
-      return null;
+      const route = routes.getYoutubeRoute();
+      return route ? { site: "youtube", section: sectionForRoute2(route) } : null;
     }
     startTimeTracker({ hasRecentInteraction: () => hasRecentInteraction, isVideoPlaying, getSection });
     let hasUpdate = false;
@@ -2026,19 +2046,9 @@
         pill.update(minutes, hasUpdate, hidden);
       });
     }
+    routes.setOnRouteChanged(refreshPill);
     setInterval(refreshPill, PILL_REFRESH_MS);
     refreshPill();
-    if (site === "instagram") {
-      startInstagramPlatform((route) => {
-        instagramRoute = route;
-        refreshPill();
-      });
-    } else {
-      startYoutubePlatform((route) => {
-        youtubeRoute = route;
-        refreshPill();
-      });
-    }
     const metaUrl = metaUrlFor("dev");
     if (settings.updateCheckEnabled && metaUrl) {
       const result = await checkForUpdate({ currentVersion: "0.1.0.13", metaUrl });
@@ -2052,7 +2062,8 @@
   function main() {
     const site = detectSite();
     if (!site) return;
-    void bootstrap(site);
+    const routes = startPlatform(site);
+    void bootstrapUi(site, routes);
   }
   main();
 })();
