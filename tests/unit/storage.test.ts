@@ -3,6 +3,7 @@ import {
   emptyDayStats,
   getDayStats,
   getSchemaVersion,
+  pruneOldDayStats,
   runMigrations,
   setDayStats,
 } from '../../src/core/storage';
@@ -33,6 +34,34 @@ describe('day stats', () => {
     stats1.yt.video = 5;
     await setDayStats(stats1, day1);
     expect(await getDayStats(day2)).toEqual(emptyDayStats());
+  });
+});
+
+describe('pruneOldDayStats', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('deletes records older than the retention window and keeps the rest', async () => {
+    const now = new Date('2026-03-10T12:00:00Z');
+    await setDayStats(emptyDayStats(), new Date('2026-01-01T00:00:00Z')); // 68 days old
+    await setDayStats(emptyDayStats(), new Date('2026-02-15T00:00:00Z')); // 23 days old
+    await setDayStats(emptyDayStats(), now);
+
+    await pruneOldDayStats(35, now);
+
+    expect(await getDayStats(new Date('2026-01-01T00:00:00Z'))).toEqual(emptyDayStats());
+    // pruned entries fall back to an empty record either way, so check the
+    // underlying key directly to actually assert deletion happened.
+    expect(localStorage.getItem('smd:v1:stats:2026-01-01')).toBeNull();
+    expect(localStorage.getItem('smd:v1:stats:2026-02-15')).not.toBeNull();
+    expect(localStorage.getItem(`smd:v1:stats:${now.toISOString().slice(0, 10)}`)).not.toBeNull();
+  });
+
+  it('leaves unrelated keys untouched', async () => {
+    localStorage.setItem('smd:v1:schemaVersion', '3');
+    await pruneOldDayStats(35, new Date('2026-03-10T12:00:00Z'));
+    expect(localStorage.getItem('smd:v1:schemaVersion')).toBe('3');
   });
 });
 

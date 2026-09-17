@@ -2,7 +2,7 @@
 // shapes live here so every feature reads/writes the same day-record
 // instead of re-deriving its own key format.
 
-import { getValue, setValue } from './gm';
+import { deleteValue, getValue, listValues, setValue } from './gm';
 
 export interface DayStats {
   ig: {
@@ -33,8 +33,10 @@ export function emptyDayStats(): DayStats {
   };
 }
 
+const DAY_KEY_PREFIX = 'smd:v1:stats:';
+
 function dayKey(date: Date): string {
-  return `smd:v1:stats:${date.toISOString().slice(0, 10)}`;
+  return `${DAY_KEY_PREFIX}${date.toISOString().slice(0, 10)}`;
 }
 
 export async function getDayStats(date = new Date()): Promise<DayStats> {
@@ -43,6 +45,24 @@ export async function getDayStats(date = new Date()): Promise<DayStats> {
 
 export async function setDayStats(stats: DayStats, date = new Date()): Promise<void> {
   await setValue(dayKey(date), stats);
+}
+
+/** Deletes day records older than `retentionDays` (docs/PIANO.md §4.6: 35
+ * days). Compares the "YYYY-MM-DD" suffix as a plain string, which sorts
+ * the same as chronological order. */
+export async function pruneOldDayStats(retentionDays = 35, now = new Date()): Promise<void> {
+  const cutoff = new Date(now);
+  cutoff.setDate(cutoff.getDate() - retentionDays);
+  const cutoffSuffix = dayKey(cutoff).slice(DAY_KEY_PREFIX.length);
+
+  const keys = await listValues();
+  for (const key of keys) {
+    if (!key.startsWith(DAY_KEY_PREFIX)) continue;
+    const suffix = key.slice(DAY_KEY_PREFIX.length);
+    if (suffix < cutoffSuffix) {
+      await deleteValue(key);
+    }
+  }
 }
 
 // --- Schema migrations -----------------------------------------------------
