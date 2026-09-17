@@ -5,7 +5,7 @@
 
 ## Stato avanzamento (da aggiornare a ogni fase)
 - [x] Fase 1 — Repo e scaffold (+ userscript "hello" verificato sull'iPhone) — **COMPLETATA il 2026-09-17**, non su Safari ma su **Orion (Kagi) + Tampermonkey** (vedi §0 e `docs/RICERCA.md` §4.2). Criteri d'uscita tutti verificati sull'iPhone dell'utente: badge su `instagram.com` **e** su `m.youtube.com`; `GM.setValue`/`GM.getValue` persistono tra i ricaricamenti (contatore `visite` salito fino a 7); CSS a document-start applicato prima del paint (parole dell'utente: "apre subitissimo"). **Nessuna riga di codice cambiata** rispetto alla build fatta per Safari
-- [ ] Fase 2 — Spike sul DOM reale (`docs/spike-findings.md` completo) — **in attesa che l'utente faccia login** (`npm run e2e:login`, sempre e solo a mano sua); tooling di cattura/sanificazione pronto
+- [ ] Fase 2 — Spike sul DOM reale (`docs/spike-findings.md` completo) — **quasi completa**: punti (a)(b)(c)(e)(f)(g)(h)(l)(m)(n)(p) verificati da desktop, (d) e (i) parziali. Restano solo (j)(k)(o)(q)(r) e il completamento di (d) (swipe/uscita/fogli), tutti da fare a mano sull'iPhone in Orion — vedi `docs/spike-findings.md`
 - [x] Fase 3 — Core — moduli generici (storage/migrazioni, url-watcher, dom-scheduler, i18n, log, silent-nav, blocks, host UI Shadow DOM), 51 test unitari verdi. Completata prima della Fase 2 perche' non dipende dai selettori reali di IG/YT; non ancora agganciata a `src/main.ts`
 - [ ] Fase 4 — Instagram — **bloccata**: serve `docs/spike-findings.md` completo (Fase 2) prima di scrivere selettori "verified"
 - [ ] Fase 5 — YouTube Shorts
