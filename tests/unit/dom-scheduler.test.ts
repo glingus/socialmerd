@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { _resetForTests, markProcessed, registerProcessor } from '../../src/core/dom-scheduler';
+import { _resetForTests, getMarkerCounts, markProcessed, registerProcessor } from '../../src/core/dom-scheduler';
 
 // Force the setTimeout(100ms) fallback path so batching is deterministic
 // under fake timers, instead of depending on a real animation frame.
@@ -85,5 +85,25 @@ describe('markProcessed', () => {
     const el = document.createElement('div');
     expect(markProcessed(el, 'a')).toBe(true);
     expect(markProcessed(el, 'b')).toBe(true);
+  });
+});
+
+describe('getMarkerCounts', () => {
+  it('counts one hit per newly marked element, not per call', () => {
+    const el = document.createElement('div');
+    markProcessed(el, 'feed-item');
+    markProcessed(el, 'feed-item'); // already marked, doesn't count again
+    markProcessed(document.createElement('div'), 'feed-item');
+    markProcessed(document.createElement('div'), 'other-marker');
+
+    const counts = getMarkerCounts();
+    expect(counts.get('feed-item')).toBe(2);
+    expect(counts.get('other-marker')).toBe(1);
+  });
+
+  it('resets on _resetForTests', () => {
+    markProcessed(document.createElement('div'), 'x');
+    _resetForTests();
+    expect(getMarkerCounts().size).toBe(0);
   });
 });

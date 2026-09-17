@@ -4,6 +4,7 @@ import {
   getDayStats,
   getSchemaVersion,
   pruneOldDayStats,
+  resetAllStats,
   runMigrations,
   setDayStats,
 } from '../../src/core/storage';
@@ -61,6 +62,27 @@ describe('pruneOldDayStats', () => {
   it('leaves unrelated keys untouched', async () => {
     localStorage.setItem('smd:v1:schemaVersion', '3');
     await pruneOldDayStats(35, new Date('2026-03-10T12:00:00Z'));
+    expect(localStorage.getItem('smd:v1:schemaVersion')).toBe('3');
+  });
+});
+
+describe('resetAllStats', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('deletes every day record regardless of age', async () => {
+    await setDayStats(emptyDayStats(), new Date('2020-01-01T00:00:00Z'));
+    await setDayStats(emptyDayStats(), new Date());
+    await resetAllStats();
+    expect(localStorage.getItem('smd:v1:stats:2020-01-01')).toBeNull();
+    expect(await getDayStats(new Date())).toEqual(emptyDayStats());
+  });
+
+  it('leaves unrelated keys untouched', async () => {
+    localStorage.setItem('smd:v1:schemaVersion', '3');
+    await setDayStats(emptyDayStats(), new Date());
+    await resetAllStats();
     expect(localStorage.getItem('smd:v1:schemaVersion')).toBe('3');
   });
 });

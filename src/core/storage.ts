@@ -65,6 +65,17 @@ export async function pruneOldDayStats(retentionDays = 35, now = new Date()): Pr
   }
 }
 
+/** Panel's "azzera statistiche" (docs/PIANO.md §4.6): deletes every day
+ * record, regardless of age. Settings and the schema version are untouched. */
+export async function resetAllStats(): Promise<void> {
+  const keys = await listValues();
+  for (const key of keys) {
+    if (key.startsWith(DAY_KEY_PREFIX)) {
+      await deleteValue(key);
+    }
+  }
+}
+
 // --- Schema migrations -----------------------------------------------------
 // Applied once, in ascending `version` order, tracked by a single stored
 // version number. A migration that has already run (version <= current) is

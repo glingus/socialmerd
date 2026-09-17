@@ -9,6 +9,12 @@ const processors = new Set<Processor>();
 let observer: MutationObserver | null = null;
 let scheduled = false;
 
+// Per-marker hit counts, fed by markProcessed. Free byproduct of the
+// existing idempotency marker: the debug overlay (docs/PIANO.md §4.6,
+// "contatori dei selettori trovati") reads this instead of every feature
+// having to instrument its own selectors.
+const markerCounts = new Map<string, number>();
+
 function runProcessors(): void {
   scheduled = false;
   for (const processor of processors) {
@@ -58,7 +64,14 @@ export function markProcessed(el: Element, marker: string): boolean {
   const attr = `data-smd-${marker}`;
   if (el.hasAttribute(attr)) return false;
   el.setAttribute(attr, '');
+  markerCounts.set(marker, (markerCounts.get(marker) ?? 0) + 1);
   return true;
+}
+
+/** Read-only snapshot of how many elements each marker has matched since
+ * the last reset, for the debug overlay. */
+export function getMarkerCounts(): ReadonlyMap<string, number> {
+  return new Map(markerCounts);
 }
 
 /** Test-only: clears all module state (processors, observer, throttle
@@ -68,4 +81,5 @@ export function _resetForTests(): void {
   observer?.disconnect();
   observer = null;
   scheduled = false;
+  markerCounts.clear();
 }

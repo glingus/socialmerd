@@ -20,3 +20,8 @@ export function detectLang(
 export function t(key: keyof typeof en, lang: Lang): string {
   return dictionaries[lang][key] ?? dictionaries.en[key];
 }
+
+/** Like `t`, but replaces `{{name}}` placeholders with `params[name]`. */
+export function tf(key: keyof typeof en, lang: Lang, params: Record<string, string | number>): string {
+  return t(key, lang).replace(/\{\{(\w+)\}\}/g, (match, name: string) => String(params[name] ?? match));
+}
