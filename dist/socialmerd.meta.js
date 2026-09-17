@@ -3,7 +3,7 @@
 // @namespace    https://github.com/glingus/socialmerd
 // @description  Instagram and YouTube without the addictive parts, in the Orion browser on iPhone (via Tampermonkey).
 // @description:it  Instagram e YouTube senza le parti che creano dipendenza, nel browser Orion su iPhone (tramite Tampermonkey).
-// @version      0.1.0.13
+// @version      0.1.0.14
 // @license      GPL-3.0-or-later
 // @match        https://www.instagram.com/*
 // @match        https://instagram.com/*
