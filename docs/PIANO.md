@@ -4,10 +4,10 @@
 > Piano approvato dall'utente il 2026-09-17. Ricerca e fonti in [`RICERCA.md`](RICERCA.md).
 
 ## Stato avanzamento (da aggiornare a ogni fase)
-- [ ] Fase 1 — Repo e scaffold (+ userscript "hello" verificato sull'iPhone)
-- [ ] Fase 2 — Spike sul DOM reale (`docs/spike-findings.md` completo)
-- [ ] Fase 3 — Core
-- [ ] Fase 4 — Instagram
+- [ ] Fase 1 — Repo e scaffold (+ userscript "hello" verificato sull'iPhone) — **in attesa della conferma dell'utente sul suo iPhone** (scaffold, build e push gia' fatti)
+- [ ] Fase 2 — Spike sul DOM reale (`docs/spike-findings.md` completo) — **in attesa che l'utente faccia login** (`npm run e2e:login`, sempre e solo a mano sua); tooling di cattura/sanificazione pronto
+- [x] Fase 3 — Core — moduli generici (storage/migrazioni, url-watcher, dom-scheduler, i18n, log, silent-nav, blocks, host UI Shadow DOM), 51 test unitari verdi. Completata prima della Fase 2 perche' non dipende dai selettori reali di IG/YT; non ancora agganciata a `src/main.ts`
+- [ ] Fase 4 — Instagram — **bloccata**: serve `docs/spike-findings.md` completo (Fase 2) prima di scrivere selettori "verified"
 - [ ] Fase 5 — YouTube Shorts
 - [ ] Fase 6 — Statistiche e UI
 - [ ] Fase 7 — Release v1.0.0 (+ Greasy Fork)
