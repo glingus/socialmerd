@@ -50,9 +50,14 @@ Restano aperti i punti (o), (q) e (r) qui sotto, che richiedono l'overlay di deb
 
 ## (d) Reel aperto da un DM (URL, viewer, swipe al successivo, fogli commenti/condivisione)
 
-- **Esito: non ancora verificato — serve l'utente.**
-- Note: per catturare questo scenario serve un thread DM reale che contenga un reel condiviso. Da fare insieme quando l'utente indica quale conversazione usare (§7.3 lo prevede esplicitamente: "l'utente ne indica uno"). Nessuna azione finché non viene indicato — si naviga in sola lettura, nessun invio/risposta nel thread.
-- Data: —
+- **Esito: parzialmente verificato** (thread indicato dall'utente; solo navigazione in lettura, nessun invio/risposta).
+- Note: in un thread `/direct/t/<thread_id>/` (URL non collegato allo username, solo un ID numerico), un reel condiviso è renderizzato come **cover statica** (`<img>` verticale ~200×356) il cui URL del CDN contiene il marcatore `efg=…CLIPS…` (base64), sormontata da un'icona SVG con `aria-label`/`title="Clip"`. Sotto la cover compare il link al profilo dell'autore originale del reel (`href="/<username>/"`). **Non è avvolta da un `<a href>`**: l'apertura passa per forza da un handler React lato client, coerente con l'aspettativa del piano (rilevamento nel DOM, non instradabile via URL, §4.2).
+  Non sono riuscito a riprodurre il tap sull'anteprima in una sessione successiva per catturare l'URL/viewer che si apre (il messaggio non era nella porzione già renderizzata della lista virtualizzata e lo scroll automatico non l'ha raggiunto in tempi ragionevoli) — **swipe al successivo, comportamento di uscita e fogli commenti/condivisione restano da verificare dal vivo**, ideale da fare insieme al test su iPhone reale (tap naturale, niente virtualizzazione da aggirare).
+- Data: 2026-09-17
+
+## (i) Viewer storie (sponsorizzate, pulsante avanti) — *seguito*
+
+- Tentata una ricerca automatica di una storia sponsorizzata: aperta la story tray dalla home e avanzate 25 storie in sequenza (tap sul terzo destro dello schermo) cercando l'etichetta "Sponsorizzato/Sponsored" nel DOM ad ogni passo. **Nessuna storia sponsorizzata incontrata** in questa sessione — normale, la frequenza di inserimento non è garantita e dipende dal targeting pubblicitario dell'account. Non ha senso continuare a cercarla artificialmente: verrà osservata quando capiterà durante l'uso normale (anche nei test iPhone di Fase 7), oppure si può riconoscere lo stesso pattern testuale già usato per i post ("Sponsorizzato"/"Sponsored") come euristica in `stories-ads.ts`, da confermare alla prima occorrenza reale.
 
 ## (e) `/reel/<code>/` caricato direttamente
 
