@@ -11,7 +11,7 @@
 // viewer). Only the confirmed, URL-addressable case is implemented.
 
 import { incrementBlock } from '../../core/blocks';
-import { type NavigateActions, getStack, returnSilently } from '../../core/silent-nav';
+import { type NavigateActions, getStack } from '../../core/silent-nav';
 import type { InstagramRoute } from './routes';
 
 export interface ReelLockState {
@@ -138,7 +138,14 @@ export function createReelLockController(): ReelLockController {
           gestureHandle?.release();
           gestureHandle = null;
           current = null;
-          returnSilently(action.origin, navigate);
+          // Deliberately navigate.replace(origin) here instead of the
+          // generic returnSilently: route-guard.ts pushes every reel-lock
+          // route onto the silent-nav stack (it isn't 'blocked'), so by now
+          // the stack's top is the leaked reel itself, not `origin` --
+          // returnSilently would call history.back() and land one step
+          // back in the reel chain (e.g. the previous reel) instead of the
+          // true origin saved when the lock first engaged.
+          navigate.replace(action.origin);
           break;
         case 'release':
           gestureHandle?.release();

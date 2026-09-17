@@ -65,18 +65,24 @@ describe('createReelLockController', () => {
     expect(controller.isLocked()).toBe(true);
   });
 
-  it('returns silently to the origin and counts reel_next when swiped to another reel', async () => {
+  it('replaces with the original origin (not one step back) when swiped to another reel', async () => {
     pushAllowed('/?variant=following');
     pushAllowed('/reel/abc/');
     const controller = createReelLockController();
     controller.handleRoute({ kind: 'reel-lock', code: 'abc' });
 
+    // route-guard.ts would have pushed the leaked reel onto the stack too
+    // (it isn't a 'blocked' route), so the stack top is now the leak
+    // itself -- a plain history.back() here would land on '/reel/abc/',
+    // not on the true origin. The controller must bypass that and replace
+    // with the saved origin directly.
     pushAllowed('/reel/xyz/');
     const navigate = { back: vi.fn(), replace: vi.fn() };
     controller.handleRoute({ kind: 'reel-lock', code: 'xyz' }, navigate);
 
     expect(controller.isLocked()).toBe(false);
-    expect(navigate.back).toHaveBeenCalledOnce(); // '/?variant=following' is on the stack
+    expect(navigate.replace).toHaveBeenCalledWith('/?variant=following');
+    expect(navigate.back).not.toHaveBeenCalled();
     await vi.waitFor(async () => {
       expect((await getBlockCounts()).reel_next).toBe(1);
     });
