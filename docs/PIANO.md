@@ -255,7 +255,7 @@ Stessa cosa per YouTube: secondo Comando Rapido su `https://m.youtube.com/`.
 Il pivot **non tocca la logica**, solo i testi che nominano Safari.
 1. ~~`src/meta.ts`~~ — **fatto**: le due `@description` (EN e IT) riscritte su Orion + Tampermonkey; `npm run build:dev` rilanciata e `dist/` ricommittata (commit `ceee77d`).
 2. ~~`README.md`~~ — **già fatto** il 2026-09-17: installazione riscritta su Orion + Tampermonkey, con l'avviso sul Chrome Web Store e i passi del Comando Rapido, in inglese e in italiano.
-3. `docs/TESTING-iphone.md`: non esiste ancora (si crea nella Fase 7). Quando lo crei, i passi sono quelli di Orion + Tampermonkey, **non** Impostazioni › Safari › Estensioni.
+3. ~~`docs/TESTING-iphone.md`~~ — **bozza scritta in anticipo il 2026-09-18** (checklist §7.3/§7.4 + punti spike ancora aperti), passi su Orion + Tampermonkey, **non** Impostazioni › Safari › Estensioni. Da eseguire ed eventualmente correggere quando l'utente fa il giro di test su iPhone.
 4. ~~`CHANGELOG.md`~~ — **già fatto** il 2026-09-17 (voce "Changed" sul passaggio a Orion).
 5. Spuntare la Fase 1 è **già fatto** in questo documento: non rifare il test del badge.
 1. **Repo e scaffold.**
