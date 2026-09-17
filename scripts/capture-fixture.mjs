@@ -50,6 +50,19 @@ async function main() {
     await page.goto(url, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2000);
 
+    // Best-effort: dismiss the "Usa l'app" interstitial (point m) so the
+    // capture shows the page underneath. Only ever clicks the close (X)
+    // icon, never the "Usa l'app" call-to-action itself.
+    try {
+      const closeBtn = page.getByRole('img', { name: 'Chiudi' }).first();
+      if (await closeBtn.isVisible({ timeout: 1000 })) {
+        await closeBtn.click();
+        await page.waitForTimeout(1000);
+      }
+    } catch {
+      // no banner present, nothing to do
+    }
+
     const html = await page.content();
     const rawHtmlPath = path.join(rawDir, `${name}.html`);
     await writeFile(rawHtmlPath, html);
