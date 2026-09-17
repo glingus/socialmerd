@@ -3,7 +3,7 @@
 // @namespace    https://github.com/glingus/socialmerd
 // @description  Instagram and YouTube without the addictive parts, in the Orion browser on iPhone (via Tampermonkey).
 // @description:it  Instagram e YouTube senza le parti che creano dipendenza, nel browser Orion su iPhone (tramite Tampermonkey).
-// @version      0.1.0.15
+// @version      0.1.0.16
 // @license      GPL-3.0-or-later
 // @match        https://www.instagram.com/*
 // @match        https://instagram.com/*
@@ -1248,16 +1248,21 @@
     ...SPONSORED_LABEL.it,
     ...SPONSORED_LABEL.en,
     ...SUGGESTED_FOR_YOU_HEADING.it,
-    ...SUGGESTED_FOR_YOU_HEADING.en,
-    ...FOLLOW_BUTTON.it,
-    ...FOLLOW_BUTTON.en
+    ...SUGGESTED_FOR_YOU_HEADING.en
   ]);
+  var FOLLOW_TEXTS = /* @__PURE__ */ new Set([...FOLLOW_BUTTON.it, ...FOLLOW_BUTTON.en]);
+  function hasFollowButton(post) {
+    for (const el of post.querySelectorAll('button, [role="button"]')) {
+      if (FOLLOW_TEXTS.has(el.textContent?.trim() ?? "")) return true;
+    }
+    return false;
+  }
   function processFeedFilter(root, route) {
     if (route.kind !== "feed") return;
     for (const post of root.querySelectorAll(FEED.postSelector)) {
       if (!markProcessed(post, "feed-filter")) continue;
       const text = post.textContent ?? "";
-      const shouldHide = [...HIDE_TEXTS].some((needle) => text.includes(needle));
+      const shouldHide = [...HIDE_TEXTS].some((needle) => text.includes(needle)) || hasFollowButton(post);
       if (shouldHide) {
         post.style.display = "none";
       }
@@ -2025,7 +2030,7 @@
     const debugOverlay = createDebugOverlay(host, lang);
     const panel = createPanel(host, {
       getLang: () => lang,
-      version: "0.1.0.15",
+      version: "0.1.0.16",
       channel: "dev",
       hasUpdate: () => hasUpdate,
       onSettingsChanged: (next) => {
@@ -2051,7 +2056,7 @@
     refreshPill();
     const metaUrl = metaUrlFor("dev");
     if (settings.updateCheckEnabled && metaUrl) {
-      const result = await checkForUpdate({ currentVersion: "0.1.0.15", metaUrl });
+      const result = await checkForUpdate({ currentVersion: "0.1.0.16", metaUrl });
       hasUpdate = result.hasUpdate;
       refreshPill();
     }
