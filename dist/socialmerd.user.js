@@ -3,7 +3,7 @@
 // @namespace    https://github.com/glingus/socialmerd
 // @description  Instagram and YouTube without the addictive parts, in the Orion browser on iPhone (via Tampermonkey).
 // @description:it  Instagram e YouTube senza le parti che creano dipendenza, nel browser Orion su iPhone (tramite Tampermonkey).
-// @version      0.1.0.16
+// @version      0.1.0.17
 // @license      GPL-3.0-or-later
 // @match        https://www.instagram.com/*
 // @match        https://instagram.com/*
@@ -1215,7 +1215,188 @@
     }
   };
 
+  // src/core/blocks.ts
+  async function incrementBlock(type, date = /* @__PURE__ */ new Date()) {
+    const stats = await getDayStats(date);
+    stats.blocks[type] += 1;
+    await setDayStats(stats, date);
+    return stats.blocks[type];
+  }
+
+  // src/core/silent-nav.ts
+  var STACK_KEY = "smd:v1:navstack";
+  var MAX_STACK = 50;
+  function readStack() {
+    try {
+      const raw = sessionStorage.getItem(STACK_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+  function writeStack(stack) {
+    sessionStorage.setItem(STACK_KEY, JSON.stringify(stack.slice(-MAX_STACK)));
+  }
+  function pushAllowed(url) {
+    const stack = readStack();
+    if (stack[stack.length - 1] !== url) {
+      stack.push(url);
+      writeStack(stack);
+    }
+  }
+  function getStack() {
+    return readStack();
+  }
+  var defaultNavigate = {
+    back: () => history.back(),
+    replace: (url) => location.replace(url)
+  };
+  function returnSilently(fallbackUrl, navigate = defaultNavigate) {
+    const stack = readStack();
+    const lastAllowed = stack[stack.length - 1];
+    if (lastAllowed) {
+      navigate.back();
+    } else {
+      navigate.replace(fallbackUrl);
+    }
+  }
+
+  // src/platforms/instagram/reel-lock.ts
+  var FALLBACK_URL = "/?variant=following";
+  var EXEMPT_SELECTOR = [
+    "input",
+    "textarea",
+    '[contenteditable="true"]',
+    '[role="dialog"]',
+    '[aria-label="Commenta"]',
+    '[aria-label="Comment"]',
+    '[aria-label="Condividi"]',
+    '[aria-label="Share"]',
+    '[aria-label="Altre opzioni"]',
+    '[aria-label="More options"]'
+  ].join(", ");
+  function decideReelLockAction(current, route, previousUrl) {
+    if (route.kind === "reel-lock") {
+      if (!current) {
+        return { type: "engage", code: route.code ?? "", origin: previousUrl ?? FALLBACK_URL };
+      }
+      if (current.code !== route.code) {
+        return { type: "swiped-next", origin: current.origin };
+      }
+      return { type: "noop" };
+    }
+    return current ? { type: "release" } : { type: "noop" };
+  }
+  function isExempt(target) {
+    return target instanceof Element ? target.closest(EXEMPT_SELECTOR) !== null : false;
+  }
+  function preventUnlessExempt(event) {
+    if (isExempt(event.target)) return;
+    event.preventDefault();
+  }
+  var ADVANCE_KEYS = /* @__PURE__ */ new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", " "]);
+  function blockKeys(event) {
+    if (isExempt(event.target)) return;
+    if (ADVANCE_KEYS.has(event.key)) event.preventDefault();
+  }
+  function blockAdjacentReelGestures(target = document) {
+    const options = { capture: true, passive: false };
+    target.addEventListener("touchmove", preventUnlessExempt, options);
+    target.addEventListener("wheel", preventUnlessExempt, options);
+    target.addEventListener("keydown", blockKeys, options);
+    return {
+      release() {
+        target.removeEventListener("touchmove", preventUnlessExempt, options);
+        target.removeEventListener("wheel", preventUnlessExempt, options);
+        target.removeEventListener("keydown", blockKeys, options);
+      }
+    };
+  }
+  var defaultNavigate2 = {
+    back: () => history.back(),
+    replace: (url) => location.replace(url)
+  };
+  function createReelLockController() {
+    let current = null;
+    let gestureHandle = null;
+    return {
+      isLocked: () => current !== null,
+      handleRoute(route, navigate = defaultNavigate2) {
+        const stack = getStack();
+        const previousUrl = stack.length >= 2 ? stack[stack.length - 2] ?? null : null;
+        const action = decideReelLockAction(current, route, previousUrl);
+        switch (action.type) {
+          case "engage":
+            current = { code: action.code, origin: action.origin };
+            gestureHandle = blockAdjacentReelGestures();
+            break;
+          case "swiped-next":
+            void incrementBlock("reel_next");
+            gestureHandle?.release();
+            gestureHandle = null;
+            current = null;
+            navigate.replace(action.origin);
+            break;
+          case "release":
+            gestureHandle?.release();
+            gestureHandle = null;
+            current = null;
+            break;
+          case "noop":
+            break;
+        }
+      }
+    };
+  }
+
+  // src/platforms/instagram/dm-reel-lock.ts
+  var FULLSCREEN_COVERAGE_RATIO = 0.8;
+  function findFullscreenVideo(root) {
+    for (const video of root.querySelectorAll("video")) {
+      const rect = video.getBoundingClientRect();
+      if (rect.width >= window.innerWidth * FULLSCREEN_COVERAGE_RATIO && rect.height >= window.innerHeight * FULLSCREEN_COVERAGE_RATIO) {
+        return video;
+      }
+    }
+    return null;
+  }
+  function createDmReelLock() {
+    let handle = null;
+    let active = false;
+    function deactivate() {
+      handle?.release();
+      handle = null;
+      active = false;
+    }
+    return {
+      isActive: () => active,
+      process(root, route) {
+        if (route.kind !== "direct") {
+          if (active) deactivate();
+          return;
+        }
+        const found = findFullscreenVideo(root) !== null;
+        if (found && !active) {
+          active = true;
+          handle = blockAdjacentReelGestures();
+        } else if (!found && active) {
+          deactivate();
+        }
+      }
+    };
+  }
+
   // src/platforms/instagram/explore-search.ts
+  var STYLE_ID5 = "smd-explore-grid-style";
+  injectStyle(
+    `
+  html[data-smd-ig-route="explore"] a[href^="/p/"],
+  html[data-smd-ig-route="explore"] a[href^="/reel/"] {
+    display: none !important;
+  }
+  `,
+    STYLE_ID5
+  );
   function hide(el) {
     el.style.display = "none";
   }
@@ -1269,14 +1450,6 @@
     }
   }
   var registerFeedFilterProcessor = (getRoute) => (root) => processFeedFilter(root, getRoute());
-
-  // src/core/blocks.ts
-  async function incrementBlock(type, date = /* @__PURE__ */ new Date()) {
-    const stats = await getDayStats(date);
-    stats.blocks[type] += 1;
-    await setDayStats(stats, date);
-    return stats.blocks[type];
-  }
 
   // src/platforms/instagram/feed-limiter.ts
   function emptyFeedState() {
@@ -1468,6 +1641,67 @@
   // src/platforms/instagram/feed-reels-placeholder.ts
   var CAPTION_MAX_LENGTH = 100;
   var PLACEHOLDER_CLASS = "smd-reel-placeholder";
+  var STYLE_ID6 = "smd-reel-placeholder-style";
+  injectStyle(
+    `
+  .${PLACEHOLDER_CLASS} {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid rgba(127, 127, 127, 0.25);
+    border-radius: 12px;
+    font: 14px/1.4 -apple-system, system-ui, sans-serif;
+    color: inherit;
+    box-sizing: border-box;
+  }
+  .${PLACEHOLDER_CLASS}-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .${PLACEHOLDER_CLASS}-avatar {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .${PLACEHOLDER_CLASS}-username {
+    font-weight: 600;
+  }
+  .${PLACEHOLDER_CLASS}-date {
+    opacity: 0.6;
+    font-size: 12px;
+  }
+  .${PLACEHOLDER_CLASS}-poster {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    max-height: 60vh;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  .${PLACEHOLDER_CLASS}-caption {
+    margin: 0;
+    opacity: 0.85;
+  }
+  .${PLACEHOLDER_CLASS}-cta {
+    align-self: flex-start;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: #4da3ff;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  @media (prefers-color-scheme: light) {
+    .${PLACEHOLDER_CLASS} { border-color: rgba(0, 0, 0, 0.12); }
+  }
+  `,
+    STYLE_ID6
+  );
   function findReelCode(article) {
     for (const link of article.querySelectorAll("a[href]")) {
       const code = parseReelPermalinkHref(link.getAttribute("href") ?? "");
@@ -1582,138 +1816,12 @@
     }
   };
 
-  // src/core/silent-nav.ts
-  var STACK_KEY = "smd:v1:navstack";
-  var MAX_STACK = 50;
-  function readStack() {
-    try {
-      const raw = sessionStorage.getItem(STACK_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
-  }
-  function writeStack(stack) {
-    sessionStorage.setItem(STACK_KEY, JSON.stringify(stack.slice(-MAX_STACK)));
-  }
-  function pushAllowed(url) {
-    const stack = readStack();
-    if (stack[stack.length - 1] !== url) {
-      stack.push(url);
-      writeStack(stack);
-    }
-  }
-  function getStack() {
-    return readStack();
-  }
-  var defaultNavigate = {
-    back: () => history.back(),
-    replace: (url) => location.replace(url)
-  };
-  function returnSilently(fallbackUrl, navigate = defaultNavigate) {
-    const stack = readStack();
-    const lastAllowed = stack[stack.length - 1];
-    if (lastAllowed) {
-      navigate.back();
-    } else {
-      navigate.replace(fallbackUrl);
-    }
-  }
-
-  // src/platforms/instagram/reel-lock.ts
-  var FALLBACK_URL = "/?variant=following";
-  var EXEMPT_SELECTOR = [
-    "input",
-    "textarea",
-    '[contenteditable="true"]',
-    '[role="dialog"]',
-    '[aria-label="Commenta"]',
-    '[aria-label="Comment"]',
-    '[aria-label="Condividi"]',
-    '[aria-label="Share"]',
-    '[aria-label="Altre opzioni"]',
-    '[aria-label="More options"]'
-  ].join(", ");
-  function decideReelLockAction(current, route, previousUrl) {
-    if (route.kind === "reel-lock") {
-      if (!current) {
-        return { type: "engage", code: route.code ?? "", origin: previousUrl ?? FALLBACK_URL };
-      }
-      if (current.code !== route.code) {
-        return { type: "swiped-next", origin: current.origin };
-      }
-      return { type: "noop" };
-    }
-    return current ? { type: "release" } : { type: "noop" };
-  }
-  function isExempt(target) {
-    return target instanceof Element ? target.closest(EXEMPT_SELECTOR) !== null : false;
-  }
-  function preventUnlessExempt(event) {
-    if (isExempt(event.target)) return;
-    event.preventDefault();
-  }
-  var ADVANCE_KEYS = /* @__PURE__ */ new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", " "]);
-  function blockKeys(event) {
-    if (isExempt(event.target)) return;
-    if (ADVANCE_KEYS.has(event.key)) event.preventDefault();
-  }
-  function blockAdjacentReelGestures(target = document) {
-    const options = { capture: true, passive: false };
-    target.addEventListener("touchmove", preventUnlessExempt, options);
-    target.addEventListener("wheel", preventUnlessExempt, options);
-    target.addEventListener("keydown", blockKeys, options);
-    return {
-      release() {
-        target.removeEventListener("touchmove", preventUnlessExempt, options);
-        target.removeEventListener("wheel", preventUnlessExempt, options);
-        target.removeEventListener("keydown", blockKeys, options);
-      }
-    };
-  }
-  var defaultNavigate2 = {
-    back: () => history.back(),
-    replace: (url) => location.replace(url)
-  };
-  function createReelLockController() {
-    let current = null;
-    let gestureHandle = null;
-    return {
-      isLocked: () => current !== null,
-      handleRoute(route, navigate = defaultNavigate2) {
-        const stack = getStack();
-        const previousUrl = stack.length >= 2 ? stack[stack.length - 2] ?? null : null;
-        const action = decideReelLockAction(current, route, previousUrl);
-        switch (action.type) {
-          case "engage":
-            current = { code: action.code, origin: action.origin };
-            gestureHandle = blockAdjacentReelGestures();
-            break;
-          case "swiped-next":
-            void incrementBlock("reel_next");
-            gestureHandle?.release();
-            gestureHandle = null;
-            current = null;
-            navigate.replace(action.origin);
-            break;
-          case "release":
-            gestureHandle?.release();
-            gestureHandle = null;
-            current = null;
-            break;
-          case "noop":
-            break;
-        }
-      }
-    };
-  }
-
   // src/core/url-watcher.ts
   function getNavigation() {
     return window.navigation;
   }
   function watchUrl(onChange, options = {}) {
-    const intervalMs = options.intervalMs ?? 250;
+    const intervalMs = options.intervalMs ?? 100;
     let lastUrl = location.href;
     const check = () => {
       if (location.href !== lastUrl) {
@@ -1734,6 +1842,17 @@
 
   // src/platforms/instagram/route-guard.ts
   var FALLBACK_URL2 = "/?variant=following";
+  var ROUTE_ATTR = "data-smd-ig-route";
+  var STYLE_ID7 = "smd-route-guard-style";
+  injectStyle(
+    `
+  html[${ROUTE_ATTR}="blocked"] body > :not(#smd-ui-host),
+  html[${ROUTE_ATTR}="redirect-to-following"] body > :not(#smd-ui-host) {
+    visibility: hidden !important;
+  }
+  `,
+    STYLE_ID7
+  );
   var defaultNavigate3 = {
     back: () => history.back(),
     replace: (url) => location.replace(url)
@@ -1741,6 +1860,7 @@
   function handleRoute(url, navigate = defaultNavigate3) {
     const { pathname, search } = new URL(url, location.origin);
     const route = classifyInstagramRoute(pathname, search);
+    document.documentElement.setAttribute(ROUTE_ATTR, route.kind);
     switch (route.kind) {
       case "redirect-to-following":
         navigate.replace(FALLBACK_URL2);
@@ -1812,6 +1932,7 @@
     let currentRoute = classifyInstagramRoute(location.pathname, location.search);
     const getRoute = () => currentRoute;
     const reelLock = createReelLockController();
+    const dmReelLock = createDmReelLock();
     const routeGuard = startRouteGuard((route) => {
       currentRoute = route;
       reelLock.handleRoute(route);
@@ -1824,7 +1945,8 @@
       registerFeedFilterProcessor(getRoute),
       registerFeedReelsPlaceholderProcessor(getRoute),
       registerFeedLimiterProcessor(getRoute, { getAccount: () => detectLoggedInUsername() }),
-      (root) => processStoriesAds(root, getRoute(), currentStoryKey)
+      (root) => processStoriesAds(root, getRoute(), currentStoryKey),
+      (root) => dmReelLock.process(root, getRoute())
     ];
     const unregisterAll = processors2.map(registerProcessor);
     return () => {
@@ -2030,7 +2152,7 @@
     const debugOverlay = createDebugOverlay(host, lang);
     const panel = createPanel(host, {
       getLang: () => lang,
-      version: "0.1.0.16",
+      version: "0.1.0.17",
       channel: "dev",
       hasUpdate: () => hasUpdate,
       onSettingsChanged: (next) => {
@@ -2056,7 +2178,7 @@
     refreshPill();
     const metaUrl = metaUrlFor("dev");
     if (settings.updateCheckEnabled && metaUrl) {
-      const result = await checkForUpdate({ currentVersion: "0.1.0.16", metaUrl });
+      const result = await checkForUpdate({ currentVersion: "0.1.0.17", metaUrl });
       hasUpdate = result.hasUpdate;
       refreshPill();
     }
