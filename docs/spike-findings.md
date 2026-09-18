@@ -166,6 +166,17 @@ Se apre Orion sulla pagina giusta → variante 1 di `PIANO.md` §4.8. Altrimenti
 
 ---
 
+## Bug trovati nel primo giro di test live su iPhone (2026-09-18)
+
+Primo giro reale su Orion + Tampermonkey, build `dev`. Trovati e corretti:
+
+1. **Card segnaposto reel senza stile** (`feed-reels-placeholder.ts`): il file non chiamava mai `injectStyle` — avatar renderizzato come `<img>` grezzo enorme e quadrato, copertina (poster) fuori schermo. Corretto aggiungendo il CSS mancante (avatar circolare 32px, poster con `max-height`/`object-fit`).
+2. **Reel da DM: swipe al successivo non bloccato** (spike punto d, mai confermato dal vivo prima d'ora): confermato che aprendo un reel condiviso in un thread DM lo scroll infinito resta attivo, perché `reel-lock.ts` gestisce solo il caso con URL (`/reel/<code>/`) e la spike non aveva mai visto la struttura del viewer aperto in-DM. Aggiunto `dm-reel-lock.ts`: euristica strutturale (non un selettore Instagram indovinato) — dentro `/direct/*`, un `<video>` che copre la maggior parte del viewport viene trattato come viewer reel aperto e blocca gesti swipe/wheel/tasti come il lock via URL. **Da riverificare dal vivo**: non è detto basti (se l'avanzamento fosse a timer invece che a gesto, questa euristica da sola non lo fermerebbe).
+3. **Esplora: flash e "tap col timing giusto" apre i consigliati** (`explore-search.ts`): il nascondimento della griglia avveniva solo via JS in un lotto (`dom-scheduler`, throttled), lasciando una finestra reale in cui i link appena inseriti durante lo scroll infinito erano visibili e toccabili. Corretto con CSS agganciato a un attributo `data-smd-ig-route` che `route-guard.ts` ora imposta in modo sincrono a ogni classificazione di rotta: il browser nasconde i nuovi nodi all'istante, senza il ritardo del batch.
+4. **"Per te" flash tornando alla Home**: stesso meccanismo del punto 3 applicato anche a `blocked`/`redirect-to-following` (nasconde `body` finché la vera navigazione non avviene) + intervallo di polling di `url-watcher.ts` ridotto da 250ms a 100ms, perché la navigazione via tab-bar di Instagram usa `pushState` (nessun `popstate`) e la Navigation API non è confermata disponibile su iOS/Orion (punto q, ancora aperto) — quindi il polling era l'unico segnale per queste navigazioni in-app.
+
+Da riverificare al prossimo giro: se il fix del punto 4 elimina davvero il flash (la latenza residua dipende comunque da quanto impiega il poll a 100ms + il vero reload innescato da `location.replace`), e se l'euristica del punto 2 basta o va raffinata con dati reali del viewer DM.
+
 ## Decisioni di prodotto da confermare con l'utente (se qualcosa risulta irrealizzabile)
 
 _(vuoto finora)_

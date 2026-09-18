@@ -52,4 +52,13 @@ describe('handleRoute', () => {
     expect(navigate.back).not.toHaveBeenCalled();
     expect(navigate.replace).not.toHaveBeenCalled();
   });
+
+  it('sets a data-smd-ig-route attribute synchronously for every classification, for CSS-based flash prevention', () => {
+    handleRoute('https://www.instagram.com/explore/', { back: vi.fn(), replace: vi.fn() });
+    expect(document.documentElement.getAttribute('data-smd-ig-route')).toBe('explore');
+
+    pushAllowed('https://www.instagram.com/?variant=following');
+    handleRoute('https://www.instagram.com/reels/', { back: vi.fn(), replace: vi.fn() });
+    expect(document.documentElement.getAttribute('data-smd-ig-route')).toBe('blocked');
+  });
 });

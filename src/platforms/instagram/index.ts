@@ -6,6 +6,7 @@
 import { registerProcessor } from '../../core/dom-scheduler';
 import { detectLoggedInUsername } from './account';
 import { processAppBanners } from './app-banners';
+import { createDmReelLock } from './dm-reel-lock';
 import { registerExploreSearchProcessors } from './explore-search';
 import { registerFeedFilterProcessor } from './feed-filter';
 import { registerFeedLimiterProcessor } from './feed-limiter';
@@ -32,6 +33,7 @@ export function startInstagramPlatform(onRoute?: (route: InstagramRoute) => void
   const getRoute = (): InstagramRoute => currentRoute;
 
   const reelLock = createReelLockController();
+  const dmReelLock = createDmReelLock();
 
   const routeGuard = startRouteGuard((route) => {
     currentRoute = route;
@@ -47,6 +49,7 @@ export function startInstagramPlatform(onRoute?: (route: InstagramRoute) => void
     registerFeedReelsPlaceholderProcessor(getRoute),
     registerFeedLimiterProcessor(getRoute, { getAccount: () => detectLoggedInUsername() }),
     (root: ParentNode) => processStoriesAds(root, getRoute(), currentStoryKey),
+    (root: ParentNode) => dmReelLock.process(root, getRoute()),
   ];
 
   const unregisterAll = processors.map(registerProcessor);

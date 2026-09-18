@@ -17,7 +17,14 @@ export interface UrlWatcherOptions {
 }
 
 export function watchUrl(onChange: (url: string) => void, options: UrlWatcherOptions = {}): () => void {
-  const intervalMs = options.intervalMs ?? 250;
+  // 100ms (down from an original 250ms): found live 2026-09-18 that
+  // Instagram's own tab-bar navigation uses pushState (no 'popstate'), and
+  // the Navigation API fast path above isn't reliably available on iOS/
+  // Orion (spike point q, still unconfirmed) -- so polling was the only
+  // signal catching some in-app navigations, and 250ms was a long enough
+  // window for unblocked content to visibly flash before route-guard.ts
+  // reacted. Still a poll, not a true hook (docs/PIANO.md §3.4).
+  const intervalMs = options.intervalMs ?? 100;
   let lastUrl = location.href;
 
   const check = (): void => {

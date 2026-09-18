@@ -14,12 +14,79 @@
 
 import { detectLang, t } from '../../core/i18n';
 import { markProcessed, type Processor } from '../../core/dom-scheduler';
+import { injectStyle } from '../../core/styles';
 import { FEED } from './selectors';
 import { parseReelPermalinkHref } from './routes';
 import type { InstagramRoute } from './routes';
 
 const CAPTION_MAX_LENGTH = 100;
 const PLACEHOLDER_CLASS = 'smd-reel-placeholder';
+const STYLE_ID = 'smd-reel-placeholder-style';
+
+// Found live 2026-09-18: this card had no CSS at all -- the avatar rendered
+// as a raw, huge, square <img> and the poster overflowed the screen width.
+// Injected once at document-start, into the page itself (not the Shadow UI
+// host): this card lives inside Instagram's own feed, not our overlay UI.
+injectStyle(
+  `
+  .${PLACEHOLDER_CLASS} {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid rgba(127, 127, 127, 0.25);
+    border-radius: 12px;
+    font: 14px/1.4 -apple-system, system-ui, sans-serif;
+    color: inherit;
+    box-sizing: border-box;
+  }
+  .${PLACEHOLDER_CLASS}-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .${PLACEHOLDER_CLASS}-avatar {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .${PLACEHOLDER_CLASS}-username {
+    font-weight: 600;
+  }
+  .${PLACEHOLDER_CLASS}-date {
+    opacity: 0.6;
+    font-size: 12px;
+  }
+  .${PLACEHOLDER_CLASS}-poster {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    max-height: 60vh;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  .${PLACEHOLDER_CLASS}-caption {
+    margin: 0;
+    opacity: 0.85;
+  }
+  .${PLACEHOLDER_CLASS}-cta {
+    align-self: flex-start;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: #4da3ff;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  @media (prefers-color-scheme: light) {
+    .${PLACEHOLDER_CLASS} { border-color: rgba(0, 0, 0, 0.12); }
+  }
+  `,
+  STYLE_ID,
+);
 
 function findReelCode(article: Element): string | null {
   for (const link of article.querySelectorAll('a[href]')) {

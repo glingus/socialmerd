@@ -5,10 +5,32 @@
 
 import { incrementBlock } from '../../core/blocks';
 import { type NavigateActions, pushAllowed, returnSilently } from '../../core/silent-nav';
+import { injectStyle } from '../../core/styles';
 import { watchUrl } from '../../core/url-watcher';
 import { classifyInstagramRoute, type InstagramRoute } from './routes';
 
 const FALLBACK_URL = '/?variant=following';
+const ROUTE_ATTR = 'data-smd-ig-route';
+const STYLE_ID = 'smd-route-guard-style';
+
+// Found live 2026-09-18: hiding a blocked/about-to-redirect route purely in
+// JS (a batched dom-scheduler pass, or even the location.replace() call
+// itself) leaves a visible window where the real ranked/suggested content
+// is on screen -- the "Per te" flash on returning to Home. Setting this
+// attribute synchronously, in the same tick as classification, and hiding
+// via CSS instead of JS closes that window: the browser applies `display`
+// the instant the attribute changes, no MutationObserver batch delay.
+// #smd-ui-host is exempted so our own pill/panel/welcome overlay never
+// blinks off along with the blocked page.
+injectStyle(
+  `
+  html[${ROUTE_ATTR}="blocked"] body > :not(#smd-ui-host),
+  html[${ROUTE_ATTR}="redirect-to-following"] body > :not(#smd-ui-host) {
+    visibility: hidden !important;
+  }
+  `,
+  STYLE_ID,
+);
 
 const defaultNavigate: NavigateActions = {
   back: () => history.back(),
@@ -22,6 +44,7 @@ const defaultNavigate: NavigateActions = {
 export function handleRoute(url: string, navigate: NavigateActions = defaultNavigate): InstagramRoute {
   const { pathname, search } = new URL(url, location.origin);
   const route = classifyInstagramRoute(pathname, search);
+  document.documentElement.setAttribute(ROUTE_ATTR, route.kind);
 
   switch (route.kind) {
     case 'redirect-to-following':

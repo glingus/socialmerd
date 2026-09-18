@@ -5,9 +5,33 @@
 // and `/reel/<code>/` permalinks (no author prefix) were only ever seen in
 // the Explore grid in this spike (docs/spike-findings.md point b/h) — the
 // feed and profiles always use the author-prefixed form.
+//
+// Found live 2026-09-18: hiding grid links only via the JS processor below
+// (batched by dom-scheduler) left a real window, during infinite scroll,
+// where freshly-inserted grid items were visible AND tappable before the
+// next batch ran -- reported as a visible flash that could even be opened
+// with the right tap timing. Fixed with CSS gated on the
+// `data-smd-ig-route` attribute route-guard.ts sets synchronously: the
+// browser hides every matching link (including ones inserted a moment
+// later) instantly, with no observer delay. The JS pass below still runs
+// too, as a fail-safe for pages that reached /explore/ with the attribute
+// somehow stale or missing.
 
 import { markProcessed, type Processor } from '../../core/dom-scheduler';
+import { injectStyle } from '../../core/styles';
 import type { InstagramRoute } from './routes';
+
+const STYLE_ID = 'smd-explore-grid-style';
+
+injectStyle(
+  `
+  html[data-smd-ig-route="explore"] a[href^="/p/"],
+  html[data-smd-ig-route="explore"] a[href^="/reel/"] {
+    display: none !important;
+  }
+  `,
+  STYLE_ID,
+);
 
 function hide(el: Element): void {
   (el as HTMLElement).style.display = 'none';

@@ -41,6 +41,19 @@ describe('watchUrl', () => {
     unsubscribe();
   });
 
+  it('uses a 100ms default polling interval when none is given', () => {
+    vi.useFakeTimers();
+    const onChange = vi.fn();
+    const unsubscribe = watchUrl(onChange);
+
+    history.pushState({}, '', '/default-interval');
+    vi.advanceTimersByTime(99);
+    expect(onChange).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1);
+    expect(onChange).toHaveBeenCalledTimes(1);
+    unsubscribe();
+  });
+
   it('stops reporting after unsubscribe', () => {
     vi.useFakeTimers();
     const onChange = vi.fn();
